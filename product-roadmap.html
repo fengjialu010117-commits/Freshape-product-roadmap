@@ -968,7 +968,7 @@ function renderProductMilestones() {
            <div class="pm-weekly">
              <div class="pm-weekly-next">
                <div class="pm-weekly-label">本周计划</div>
-               ${planItemsHTML(latest.nextPlan, p.id, latest.id, false)}
+               ${planItemsHTML(latest.nextPlan, p.id, latest.id, true)}
              </div>
              <div class="pm-weekly-done">
                <div class="pm-weekly-label">会议纪要</div>
@@ -1821,7 +1821,7 @@ function planItemsHTML(nextPlan, pid, logId, interactive) {
   if (!items.length) return '<span style="color:#94a3b8;font-size:13px">—</span>';
   return items.map(item => {
     const cls = `plan-item ${item.done?'done':''} ${interactive?'interactive':''}`;
-    const handler = interactive ? `onclick="togglePlanItem('${esc(pid)}','${esc(logId)}','${esc(item.id)}')"` : '';
+    const handler = interactive ? `onclick="event.stopPropagation();togglePlanItem('${esc(pid)}','${esc(logId)}','${esc(item.id)}')"` : '';
     return `<div class="${cls}" ${handler}>
       <div class="plan-check ${item.done?'done':''}">${item.done?'✓':''}</div>
       <span class="plan-text">${esc(item.text)}</span>
