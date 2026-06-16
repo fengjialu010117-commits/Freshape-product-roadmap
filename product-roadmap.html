@@ -384,7 +384,9 @@
   /* PRODUCT MILESTONE CARDS (homepage primary) */
   .pm-section { padding: 20px 28px 4px; }
   .pm-section-title { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 14px; }
-  .pm-card { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 12px; cursor: pointer; transition: box-shadow .15s, border-color .15s; }
+  .pm-card { background: white; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 12px; cursor: pointer; transition: box-shadow .15s, border-color .15s; }
+  .pm-card-body { padding: 20px 24px; }
+  .pm-cover { width: 100%; height: 110px; object-fit: cover; object-position: center; display: block; }
   .pm-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.07); border-color: #bfdbfe; }
   .pm-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
   .pm-name { font-size: 16px; font-weight: 700; flex: 1; min-width: 0; }
@@ -985,6 +987,8 @@ function renderProductMilestones() {
         : `<hr class="pm-divider"><div class="pm-no-log">暂无周会记录</div>`;
 
       return `<div class="pm-card" id="pm-card-${esc(p.id)}" onclick="openDetailPage('${esc(p.id)}')">
+        ${p.coverImage ? `<img class="pm-cover" src="${p.coverImage}" alt="">` : ''}
+        <div class="pm-card-body">
         <div class="pm-header">
           <div style="width:4px;height:36px;border-radius:2px;background:${accentColor};flex-shrink:0"></div>
           <div style="flex:1;min-width:0">
@@ -1003,6 +1007,7 @@ function renderProductMilestones() {
         </div>
         ${p.milestones.length ? `<div class="pm-ms-row">${msHTML}</div>` : ''}
         ${weeklyHTML}
+        </div>
       </div>`;
     }).join('') + `</div>`;
 }
@@ -2230,7 +2235,7 @@ function renderDetailPage(id) {
   }
 
   const heroBg = p.coverImage
-    ? `background-image:url('${p.coverImage}');background-size:cover;background-position:center;`
+    ? `background-image:url('${p.coverImage}');background-size:cover;background-position:top center;`
     : `background:linear-gradient(135deg,${heroColor} 0%,${heroColor}bb 100%);`;
   const docs = p.documents || [];
 
