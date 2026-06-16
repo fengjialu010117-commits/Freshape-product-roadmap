@@ -488,7 +488,9 @@ const DEFAULT_DATA = {
       <div class="form-row">
         <div class="form-field" style="flex:1">
           <label>负责人 *</label>
-          <input type="text" id="c-owner" placeholder="姓名">
+          <select id="c-owner">
+            <option value="">请选择</option>
+          </select>
         </div>
         <div class="form-field" style="flex:1">
           <label>当前状态</label>
@@ -643,6 +645,7 @@ let editMode = false;
 let viewMode = 'group';
 let filters = { status: 'all', line: 'all' };
 const STORAGE_KEY = 'hiwood-roadmap-v2';
+const MEMBERS = ['Haibo Zhang', 'Yong Liu'];
 const SUPABASE_URL = 'https://sftmritlhxbluhxtddqv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmdG1yaXRsaHhibHVoeHRkZHF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NzgzOTAsImV4cCI6MjA5NzE1NDM5MH0.5Ta6XTE-I3H2SfrFgYw40wWGjCmEnL03Hx6m5ahTJng';
 
@@ -896,7 +899,10 @@ function cardHTML(p) {
     : '';
   return `
   <div class="card" onclick="openDetailPage('${esc(p.id)}')">
-    <div class="card-line-bar" style="background:${esc(p.lineColor)}"></div>
+    ${p.coverImage
+      ? `<div style="height:120px;background:url('${p.coverImage}') center/cover;border-radius:10px 10px 0 0;margin:-18px -18px 14px;"></div>`
+      : `<div class="card-line-bar" style="background:${esc(p.lineColor)}"></div>`
+    }
     <div class="card-header">
       <span class="card-id">${esc(p.id)}</span>
       <div class="card-actions">
@@ -1015,6 +1021,29 @@ function openEdit(id) {
   const today = new Date().toISOString().slice(0,10);
 
   document.getElementById('edit-body').innerHTML = `
+    <!-- 名称 & 封面图 -->
+    <div class="edit-section">
+      <div class="edit-section-title">✏️ 产品名称</div>
+      <div class="form-field" style="margin-bottom:8px">
+        <input type="text" id="e-pname" value="${esc(p.name)}" placeholder="产品名称">
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="saveName('${esc(id)}')">保存名称</button>
+    </div>
+
+    <!-- 封面图 -->
+    <div class="edit-section">
+      <div class="edit-section-title">🖼️ 封面图</div>
+      ${p.coverImage ? `<img src="${p.coverImage}" style="width:100%;max-height:140px;object-fit:cover;border-radius:8px;margin-bottom:10px">` : ''}
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <label style="cursor:pointer;padding:6px 14px;background:var(--primary);color:white;border-radius:7px;font-size:13px;font-weight:500">
+          上传图片
+          <input type="file" accept="image/*" style="display:none" onchange="uploadCover('${esc(id)}',this)">
+        </label>
+        ${p.coverImage ? `<button class="btn btn-danger btn-sm" onclick="removeCover('${esc(id)}')">删除封面</button>` : ''}
+        <span style="font-size:12px;color:var(--text-muted)">建议小于 500KB</span>
+      </div>
+    </div>
+
     <!-- 状态 & 进度 -->
     <div class="edit-section">
       <div class="edit-section-title">📊 状态与进度</div>
@@ -1130,6 +1159,39 @@ function openEdit(id) {
     </div>
   `;
   openModal('edit-overlay');
+}
+
+function saveName(id) {
+  const name = document.getElementById('e-pname').value.trim();
+  if (!name) { alert('名称不能为空'); return; }
+  const p = appData.products.find(x=>x.id===id);
+  p.name = name;
+  document.getElementById('e-name').textContent = name;
+  saveData(); renderCards(); renderStats();
+  flash('产品名称已保存');
+}
+
+function uploadCover(id, input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 800000) { alert('图片太大，请压缩到 500KB 以内再上传'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const p = appData.products.find(x=>x.id===id);
+    p.coverImage = e.target.result;
+    saveData(); renderCards();
+    openEdit(id);
+    flash('封面图已上传');
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeCover(id) {
+  const p = appData.products.find(x=>x.id===id);
+  delete p.coverImage;
+  saveData(); renderCards();
+  openEdit(id);
+  flash('封面图已删除');
 }
 
 function saveBasic(id) {
@@ -1268,11 +1330,13 @@ function openCreate() {
   const today = new Date().toISOString().slice(0,10);
   document.getElementById('c-start').value = today;
   document.getElementById('c-name').value = '';
-  document.getElementById('c-owner').value = '';
   document.getElementById('c-desc').value = '';
   document.getElementById('c-goal').value = '';
   document.getElementById('c-m-name').value = '';
   document.getElementById('c-m-date').value = '';
+  const ownerSel = document.getElementById('c-owner');
+  ownerSel.innerHTML = '<option value="">请选择</option>' +
+    MEMBERS.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
   createMilestones = [];
   document.getElementById('c-milestone-list').innerHTML = '';
   openModal('create-overlay');
