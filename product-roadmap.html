@@ -760,7 +760,8 @@ function cardHTML(p) {
   const done = p.milestones.filter(m=>m.status==='done').length;
   const pc = p.progress >= 100 ? '#16a34a' : p.progress >= 60 ? '#2563eb' : p.progress >= 30 ? '#d97706' : '#9ca3af';
   const docCount = (p.documents||[]).length;
-  const currentM = p.milestones.find(m => m.status === 'current');
+  const currentM = p.milestones.find(m => m.status === 'current')
+    || p.milestones.find(m => m.status === 'upcoming');
   const stageHTML = currentM
     ? `<div class="card-stage">📍 ${esc(currentM.name)}</div>`
     : '';
@@ -1254,23 +1255,36 @@ function renderDetailPage(id) {
 
   const done = p.milestones.filter(m => m.status === 'done').length;
   const total = p.milestones.length;
-  const r = 46, circ = 2 * Math.PI * r;
+  const r = 42, circ = 2 * Math.PI * r;
   const ratio = total > 0 ? done / total : 0;
   const offset = circ * (1 - ratio);
   const pc = p.progress >= 100 ? '#16a34a' : p.progress >= 60 ? '#2563eb' : p.progress >= 30 ? '#d97706' : '#9ca3af';
 
   let countdownHTML = '';
   if (p.status === '已上线') {
-    countdownHTML = `<span class="countdown done">✅ 已上线</span>`;
+    countdownHTML = `<div class="countdown done">✅ 已上线</div>`;
   } else if (p.targetDate) {
     const days = Math.ceil((new Date(p.targetDate) - new Date()) / 86400000);
-    if (days < 0) countdownHTML = `<span class="countdown late">⚠️ 已超期 ${Math.abs(days)} 天</span>`;
-    else if (days <= 30) countdownHTML = `<span class="countdown warn">⏰ 还有 ${days} 天</span>`;
-    else countdownHTML = `<span class="countdown ok">📅 还有 ${days} 天</span>`;
+    if (days < 0) countdownHTML = `<div class="countdown late">⚠️ 已超期 ${Math.abs(days)} 天</div>`;
+    else if (days <= 30) countdownHTML = `<div class="countdown warn">⏰ 距目标还有 ${days} 天</div>`;
+    else countdownHTML = `<div class="countdown ok">📅 距目标还有 ${days} 天</div>`;
   }
 
   const currentM = p.milestones.find(m => m.status === 'current');
   const docs = p.documents || [];
+
+  // ring SVG — label inside SVG to avoid positioning bugs
+  const ringHTML = `
+    <svg width="110" height="110" viewBox="0 0 110 110" style="display:block">
+      <circle cx="55" cy="55" r="${r}" fill="none" stroke="#e5e7eb" stroke-width="9"/>
+      <circle cx="55" cy="55" r="${r}" fill="none" stroke="${pc}" stroke-width="9"
+        stroke-linecap="round"
+        stroke-dasharray="${circ.toFixed(2)}"
+        stroke-dashoffset="${offset.toFixed(2)}"
+        transform="rotate(-90 55 55)"/>
+      <text x="55" y="49" text-anchor="middle" font-size="18" font-weight="700" fill="${pc}" font-family="-apple-system,PingFang SC,sans-serif">${done}/${total}</text>
+      <text x="55" y="65" text-anchor="middle" font-size="11" fill="#9ca3af" font-family="-apple-system,PingFang SC,sans-serif">里程碑完成</text>
+    </svg>`;
 
   const page = document.getElementById('detail-page');
   page.innerHTML = `
@@ -1284,7 +1298,7 @@ function renderDetailPage(id) {
       <div class="detail-header">
         <div class="detail-title-row">
           <div>
-            <div style="font-size:11px;color:var(--text-muted);font-family:monospace;margin-bottom:6px">${esc(p.id)}</div>
+            <div style="font-size:11px;color:var(--text-muted);font-family:monospace;margin-bottom:6px">${esc(p.id)} · ${esc(p.line)}</div>
             <div class="detail-title">${esc(p.name)}</div>
           </div>
           <span class="badge status-${esc(p.status)}" style="flex-shrink:0;padding:6px 14px;font-size:13px">
@@ -1292,35 +1306,22 @@ function renderDetailPage(id) {
           </span>
         </div>
         <div class="detail-meta-row">
-          <span style="display:flex;align-items:center;gap:5px">
-            <span class="avatar" style="background:${esc(p.ownerBg)};width:22px;height:22px;font-size:11px">${esc(p.owner[0])}</span>
-            ${esc(p.owner)}
+          <span style="display:flex;align-items:center;gap:6px">
+            <span class="avatar" style="background:${esc(p.ownerBg)};width:24px;height:24px;font-size:11px">${esc(p.owner[0])}</span>
+            <span style="font-weight:500">${esc(p.owner)}</span>
           </span>
-          ${p.startDate ? `<span>📅 ${esc(p.startDate)} 启动</span>` : ''}
-          ${p.targetDate ? `<span>🎯 ${esc(p.targetDate)} 目标上线</span>` : ''}
+          ${p.startDate ? `<span style="color:var(--text-muted)">启动 ${esc(p.startDate)}</span>` : ''}
+          ${p.targetDate ? `<span style="color:var(--text-muted)">目标 ${esc(p.targetDate)}</span>` : ''}
         </div>
         <div class="detail-desc">${esc(p.description)}</div>
         ${currentM ? `<div class="detail-stage">📍 当前阶段：${esc(currentM.name)}</div>` : ''}
       </div>
 
       <div class="detail-stats">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
-          <div class="ring-chart">
-            <svg width="110" height="110" viewBox="0 0 110 110">
-              <circle cx="55" cy="55" r="${r}" fill="none" stroke="#e5e7eb" stroke-width="10"/>
-              <circle cx="55" cy="55" r="${r}" fill="none" stroke="${pc}" stroke-width="10" stroke-linecap="round"
-                stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}"/>
-            </svg>
-            <div class="ring-label">
-              <div class="ring-num" style="color:${pc}">${done}/${total}</div>
-              <div class="ring-sub">里程碑</div>
-            </div>
-          </div>
-          <div style="font-size:12px;color:var(--text-muted)">完成进度</div>
-        </div>
+        <div style="display:flex;justify-content:center">${ringHTML}</div>
         <div class="stats-right">
           <div>
-            <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">整体进度</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;font-weight:500">整体进度</div>
             <div class="big-pct" style="color:${pc}">${p.progress}%</div>
             <div class="big-progress-bar" style="margin-top:10px"><div class="big-progress-fill" style="width:${p.progress}%;background:${pc}"></div></div>
           </div>
