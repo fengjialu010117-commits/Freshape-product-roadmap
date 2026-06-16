@@ -533,6 +533,8 @@ let editMode = false;
 let viewMode = 'group';
 let filters = { status: 'all', line: 'all' };
 const STORAGE_KEY = 'hiwood-roadmap-v2';
+const SUPABASE_URL = 'https://sftmritlhxbluhxtddqv.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmdG1yaXRsaHhibHVoeHRkZHF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NzgzOTAsImV4cCI6MjA5NzE1NDM5MH0.5Ta6XTE-I3H2SfrFgYw40wWGjCmEnL03Hx6m5ahTJng';
 
 // ── Init ───────────────────────────────────────────────────────
 async function init() {
@@ -545,25 +547,25 @@ async function init() {
   }
   renderPage();
 
-  // 2. 再同步服务器数据
+  // 2. 再同步 Supabase 数据
   try {
-    const r = await fetch('/api/data');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/roadmap?id=eq.1`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
     if (r.ok) {
-      const serverData = await r.json();
+      const rows = await r.json();
+      const serverData = rows[0]?.data;
       if (serverData && serverData.products) {
         const serverDate = serverData.lastUpdated || '2000-01-01';
         const localDate = appData.lastUpdated || '2000-01-01';
         if (serverDate >= localDate) {
-          // 服务器数据更新，以服务器为准
           appData = serverData;
           localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
           renderPage();
         } else {
-          // 本地数据更新，推送到服务器（恢复重启后丢失的数据）
           pushToServer();
         }
       } else {
-        // 服务器无数据（刚重启），用本地数据恢复
         pushToServer();
       }
     }
@@ -591,10 +593,15 @@ function saveData() {
 }
 
 function pushToServer() {
-  fetch('/api/data', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(appData)
+  fetch(`${SUPABASE_URL}/rest/v1/roadmap?id=eq.1`, {
+    method: 'PATCH',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({ data: appData })
   }).catch(() => {});
 }
 
