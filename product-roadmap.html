@@ -116,7 +116,7 @@
 
   /* CARD */
   .card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 18px; cursor: pointer; transition: all .2s; position: relative; overflow: hidden; }
-  .card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.09); transform: translateY(-1px); border-color: #93c5fd; }
+  .card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.08); border-color: #bfdbfe; }
   .card-line-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
   .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .card-id { font-size: 11px; color: var(--text-muted); font-family: monospace; }
@@ -141,16 +141,16 @@
   .doc-count { font-size: 11px; color: var(--primary); background: var(--primary-light); padding: 2px 7px; border-radius: 8px; }
 
   /* STATUS */
-  .status-规划中 { background: #f0f9ff; color: #0369a1; }
-  .status-dot-规划中 { background: #0369a1; }
-  .status-推进中 { background: #fffbeb; color: #b45309; }
-  .status-dot-推进中 { background: #f59e0b; }
-  .status-测试中 { background: #f5f3ff; color: #6d28d9; }
-  .status-dot-测试中 { background: #7c3aed; }
-  .status-已上线 { background: var(--success-light); color: var(--success); }
-  .status-dot-已上线 { background: var(--success); }
-  .status-暂停 { background: #f9fafb; color: #6b7280; }
-  .status-dot-暂停 { background: #9ca3af; }
+  .status-规划中 { background: #eff6ff; color: #2563eb; }
+  .status-dot-规划中 { background: #60a5fa; }
+  .status-推进中 { background: #fef9ec; color: #a16207; }
+  .status-dot-推进中 { background: #fbbf24; }
+  .status-测试中 { background: #f5f3ff; color: #7c3aed; }
+  .status-dot-测试中 { background: #a78bfa; }
+  .status-已上线 { background: #f0fdf4; color: #16a34a; }
+  .status-dot-已上线 { background: #4ade80; }
+  .status-暂停 { background: #f8fafc; color: #64748b; }
+  .status-dot-暂停 { background: #cbd5e1; }
 
   /* MODAL BASE */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 200; align-items: flex-start; justify-content: center; padding: 32px 16px; overflow-y: auto; }
@@ -296,6 +296,25 @@
   /* CARD STAGE */
   .card-stage { font-size: 11px; color: #92400e; background: #fffbeb; padding: 2px 8px; border-radius: 8px; margin-top: 4px; display: inline-block; }
 
+  /* DETAIL PAGE LAYOUT */
+  .dp-layout { display: flex; align-items: flex-start; }
+  .dp-main { flex: 1; min-width: 0; padding: 28px 28px 80px; }
+  .dp-sidebar { width: 230px; flex-shrink: 0; border-left: 1px solid var(--border); background: white; position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto; padding: 20px 16px; }
+  .sb-block { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9; }
+  .sb-block:last-child { border-bottom: none; margin-bottom: 0; }
+  .sb-heading { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; }
+  .sb-meta-row { display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; font-size: 13px; }
+  .sb-meta-label { width: 52px; font-size: 11px; color: #94a3b8; flex-shrink: 0; padding-top: 1px; }
+  .sb-meta-val { flex: 1; font-weight: 500; color: var(--text); line-height: 1.4; }
+  .sb-progress-num { font-size: 22px; font-weight: 800; line-height: 1; margin-bottom: 6px; }
+  .sb-progress-bar { height: 5px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+  .sb-ns-item { display: flex; align-items: flex-start; gap: 7px; padding: 5px 0; font-size: 12px; }
+  .sb-ns-check { width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid #d1d5db; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: white; }
+  .sb-ns-check.done { background: var(--success); border-color: var(--success); }
+  .sb-ns-text { flex: 1; line-height: 1.4; }
+  .sb-ns-text.done { text-decoration: line-through; color: #94a3b8; }
+  @media (max-width: 768px) { .dp-sidebar { display: none; } .dp-main { padding: 16px; } }
+
   /* DETAIL PAGE HERO */
   .dp-hero { position: relative; overflow: hidden; min-height: 210px; display: flex; flex-direction: column; justify-content: flex-end; }
   .dp-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.72) 0%, rgba(0,0,0,.35) 55%, rgba(0,0,0,.08) 100%); }
@@ -344,6 +363,44 @@
   .ns-due.soon { color: #b45309; background: #fffbeb; }
   .ns-due.overdue { color: #dc2626; background: #fef2f2; font-weight: 600; }
   .ns-empty { text-align: center; padding: 24px; color: var(--text-muted); font-size: 13px; border: 1px dashed var(--border); border-radius: 10px; }
+
+  /* WEEKLY LOG */
+  .wl-card { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
+  .wl-header { display: flex; align-items: center; justify-content: space-between; padding: 11px 16px; background: #f8fafc; border-bottom: 1px solid var(--border); }
+  .wl-date { font-size: 13px; font-weight: 700; color: var(--text); }
+  .wl-author { font-size: 11px; color: #94a3b8; }
+  .wl-body { padding: 14px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .wl-body { grid-template-columns: 1fr; } }
+  .wl-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 5px; }
+  .wl-completed .wl-label { color: #16a34a; }
+  .wl-nextplan .wl-label { color: #2563eb; }
+  .wl-text { font-size: 13px; line-height: 1.65; color: #374151; }
+
+  /* OVERDUE MILESTONE */
+  .ms-item.overdue .ms-dot { background: #fef2f2; border-color: #ef4444; color: #dc2626; font-size: 9px; }
+  .ms-item.overdue .ms-name { color: #dc2626; font-weight: 600; }
+  .ms-item.overdue .ms-date { color: #ef4444; font-weight: 600; }
+  .overdue-tag { font-size: 10px; background: #fef2f2; color: #dc2626; border-radius: 6px; padding: 1px 6px; margin-top: 3px; font-weight: 600; }
+
+  /* 本周快报 */
+  .digest-wrap { background: white; border-bottom: 1px solid var(--border); }
+  .digest-toggle { display: flex; align-items: center; justify-content: space-between; padding: 10px 28px; cursor: pointer; user-select: none; }
+  .digest-toggle-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .07em; display: flex; align-items: center; gap: 8px; }
+  .digest-toggle-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; display: inline-block; }
+  .digest-toggle-arrow { font-size: 12px; color: var(--text-muted); transition: transform .2s; }
+  .digest-toggle-arrow.open { transform: rotate(180deg); }
+  .digest-grid { display: none; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); border-top: 1px solid var(--border); }
+  .digest-grid.open { display: grid; }
+  .digest-item { padding: 14px 18px; border-right: 1px solid var(--border); }
+  .digest-item:last-child { border-right: none; }
+  .digest-product-name { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+  .digest-meta { font-size: 11px; color: #94a3b8; margin-bottom: 8px; }
+  .digest-section { margin-bottom: 6px; }
+  .digest-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+  .digest-section.completed .digest-section-label { color: #16a34a; }
+  .digest-section.next .digest-section-label { color: #2563eb; }
+  .digest-section-text { font-size: 12px; line-height: 1.5; color: #374151; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .digest-empty { font-size: 12px; color: #cbd5e1; padding: 6px 0; }
 
   /* CHARTS */
   .charts-section { padding: 0 28px 40px; }
@@ -408,7 +465,7 @@ const DEFAULT_DATA = {
       updates: [
         { date: "2026-06-12", author: "李明", content: "供应商完成首批试产 200 套，质检报告预计本周到达，尺寸精度符合要求，等待表面处理确认。" }
       ],
-      documents: [], nextSteps: []
+      documents: [], nextSteps: [], weeklyLogs: []
     },
     {
       id: "P002",
@@ -434,7 +491,7 @@ const DEFAULT_DATA = {
       updates: [
         { date: "2026-04-02", author: "张晓", content: "Q1 收官：GMV 32 万欧元，Reviews 623 条，评分 4.6 ★，全部目标达成。iPhone 17 系列模具立项已启动。" }
       ],
-      documents: [], nextSteps: []
+      documents: [], nextSteps: [], weeklyLogs: []
     },
     {
       id: "P003",
@@ -460,7 +517,7 @@ const DEFAULT_DATA = {
       updates: [
         { date: "2026-06-10", author: "王芳", content: "完成初步竞品扫描，已整理 12 款主要竞品数据。本周开始用户访谈，下周出调研报告。" }
       ],
-      documents: [], nextSteps: []
+      documents: [], nextSteps: [], weeklyLogs: []
     },
     {
       id: "P004",
@@ -485,7 +542,7 @@ const DEFAULT_DATA = {
       updates: [
         { date: "2026-06-15", author: "张晓", content: "项目正式立项，S25 Ultra 尺寸资料已收集，模具供应商报价沟通中。" }
       ],
-      documents: [], nextSteps: []
+      documents: [], nextSteps: [], weeklyLogs: []
     },
     {
       id: "P005",
@@ -512,7 +569,7 @@ const DEFAULT_DATA = {
       updates: [
         { date: "2026-06-14", author: "陈浩", content: "首批 2000 套已出仓，头程物流单号已录入，预计 6/28 到达 ONT8 仓库。Listing 主图已完成，A+ 内容设计稿审核中。" }
       ],
-      documents: [], nextSteps: []
+      documents: [], nextSteps: [], weeklyLogs: []
     },
     {
       id: "P006",
@@ -538,7 +595,7 @@ const DEFAULT_DATA = {
       updates: [
         { date: "2026-05-02", author: "刘洋", content: "暂停：Apple MagSafe 认证报价 12 万元，超出 Q2 预算。已提交 Q3 追加预算申请，等待 6 月底管理层审批。" }
       ],
-      documents: [], nextSteps: []
+      documents: [], nextSteps: [], weeklyLogs: []
     }
   ]
 };
@@ -694,6 +751,7 @@ const DEFAULT_DATA = {
 </div>
 
 <div class="stats" id="stats-area"></div>
+<div class="digest-wrap" id="digest-area"></div>
 
 <div class="main">
   <div class="section-title">产品列表 <span id="count-label"></span></div>
@@ -795,8 +853,64 @@ function renderPage() {
   lf.innerHTML = '<button class="fbtn active" onclick="setFilter(\'line\',\'all\',this)">全部</button>' +
     lines.map(l => `<button class="fbtn" onclick="setFilter('line','${esc(l)}',this)">${esc(l)}</button>`).join('');
   renderStats();
+  renderDigest();
   renderCards();
   renderCharts();
+}
+
+function renderDigest() {
+  const area = document.getElementById('digest-area');
+  if (!area) return;
+  const today = new Date();
+  const cutoff = new Date(today); cutoff.setDate(cutoff.getDate() - 21);
+  const items = appData.products.map(p => {
+    const logs = (p.weeklyLogs || []).slice().sort((a,b) => b.meetingDate > a.meetingDate ? 1 : -1);
+    const latest = logs[0];
+    const recent = latest && new Date(latest.meetingDate) >= cutoff;
+    return { p, latest: recent ? latest : null };
+  });
+  const digestOpen = sessionStorage.getItem('digest-open') !== 'false';
+  area.innerHTML = `
+    <div class="digest-toggle" onclick="toggleDigest()">
+      <div class="digest-toggle-title">
+        <span class="digest-toggle-dot"></span>本周快报
+      </div>
+      <span class="digest-toggle-arrow ${digestOpen?'open':''}" id="digest-arrow">▾</span>
+    </div>
+    <div class="digest-grid ${digestOpen?'open':''}" id="digest-grid">
+      ${items.map(({p, latest}) => {
+        const statusDot = `<span style="width:6px;height:6px;border-radius:50%;display:inline-block;background:${
+          p.status==='已上线'?'#4ade80':p.status==='推进中'?'#fbbf24':p.status==='测试中'?'#a78bfa':'#cbd5e1'}"></span>`;
+        if (!latest) return `
+          <div class="digest-item">
+            <div class="digest-product-name">${statusDot}${esc(p.name)}</div>
+            <div class="digest-meta">${esc(p.status)}</div>
+            <div class="digest-empty">暂无本期记录</div>
+          </div>`;
+        return `
+          <div class="digest-item">
+            <div class="digest-product-name">${statusDot}${esc(p.name)}</div>
+            <div class="digest-meta">${esc(latest.meetingDate)} 周会 · ${esc(latest.author||'')}</div>
+            ${latest.completed ? `<div class="digest-section completed">
+              <div class="digest-section-label">本周完成</div>
+              <div class="digest-section-text">${esc(latest.completed)}</div>
+            </div>` : ''}
+            ${latest.nextPlan ? `<div class="digest-section next">
+              <div class="digest-section-label">下周计划</div>
+              <div class="digest-section-text">${esc(latest.nextPlan)}</div>
+            </div>` : ''}
+          </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+function toggleDigest() {
+  const grid = document.getElementById('digest-grid');
+  const arrow = document.getElementById('digest-arrow');
+  const isOpen = grid.classList.toggle('open');
+  arrow.classList.toggle('open', isOpen);
+  sessionStorage.setItem('digest-open', isOpen);
 }
 
 function renderCharts() {
@@ -1170,7 +1284,7 @@ function cardHTML(p) {
   const currentM = p.milestones.find(m => m.status === 'current')
     || p.milestones.find(m => m.status === 'upcoming');
   const stageHTML = currentM
-    ? `<div class="card-stage">📍 ${esc(currentM.name)}</div>`
+    ? `<div class="card-stage">${esc(currentM.name)}</div>`
     : '';
   return `
   <div class="card" onclick="openDetailPage('${esc(p.id)}')">
@@ -1181,12 +1295,12 @@ function cardHTML(p) {
     <div class="card-header">
       <span class="card-id">${esc(p.id)}</span>
       <div class="card-actions">
-        <button class="edit-card-btn" onclick="event.stopPropagation();openEdit('${esc(p.id)}')">✏️ 编辑</button>
+        <button class="edit-card-btn" onclick="event.stopPropagation();openEdit('${esc(p.id)}')">编辑</button>
         <span class="badge status-${esc(p.status)}"><span class="badge-dot status-dot-${esc(p.status)}"></span>${esc(p.status)}</span>
       </div>
     </div>
     <div class="card-name">${esc(p.name)}</div>
-    <div class="card-line">📁 ${esc(p.line)}</div>
+    <div class="card-line">${esc(p.line)}</div>
     <div class="card-desc">${esc(p.description)}</div>
     ${stageHTML}
     <div class="progress-wrap" style="margin-top:10px">
@@ -1199,7 +1313,7 @@ function cardHTML(p) {
     <div class="card-footer">
       <div class="card-owner"><div class="avatar" style="background:${esc(p.ownerBg)}">${esc(p.owner[0])}</div>${esc(p.owner)}</div>
       <div style="display:flex;align-items:center;gap:8px">
-        ${docCount ? `<span class="doc-count">📎 ${docCount} 个文档</span>` : ''}
+        ${docCount ? `<span class="doc-count">${docCount} 个文档</span>` : ''}
         <span class="card-dates">目标 ${esc(p.targetDate)}</span>
       </div>
     </div>
@@ -1270,12 +1384,12 @@ function openDetail(id) {
       </div>
     </div>
     <div class="modal-section">
-      <div class="modal-section-title">最新进展</div>
-      ${p.updates.map(u=>`
+      <div class="modal-section-title">周会记录</div>
+      ${((p.weeklyLogs||[]).slice().sort((a,b)=>b.meetingDate>a.meetingDate?1:-1)).map(l=>`
       <div class="update-item">
-        <div class="update-meta"><span>${esc(u.author)}</span><span>${esc(u.date)}</span></div>
-        <div class="update-content">${esc(u.content)}</div>
-      </div>`).join('')}
+        <div class="update-meta"><span style="font-weight:600">${esc(l.meetingDate)} 周会</span><span>${esc(l.author||'')}</span></div>
+        <div class="update-content"><b style="color:#16a34a;font-size:11px">完成：</b>${esc(l.completed||'—')}<br><b style="color:#2563eb;font-size:11px">计划：</b>${esc(l.nextPlan||'—')}</div>
+      </div>`).join('') || '<div style="color:var(--text-muted);font-size:13px">暂无记录</div>'}
     </div>
   `;
   openModal('detail-overlay');
@@ -1341,18 +1455,24 @@ function openEdit(id) {
       <button class="btn btn-primary btn-sm" onclick="saveBasic('${esc(id)}')">保存状态/进度</button>
     </div>
 
-    <!-- 添加进展 -->
+    <!-- 周会记录 -->
     <div class="edit-section">
-      <div class="edit-section-title">📝 添加最新进展</div>
+      <div class="edit-section-title">📋 添加周会记录</div>
+      ${(p.weeklyLogs||[]).length ? `
+      <div style="margin-bottom:12px;font-size:12px;color:var(--text-muted)">已有 ${p.weeklyLogs.length} 条记录，最近：${esc(p.weeklyLogs.slice().sort((a,b)=>b.meetingDate>a.meetingDate?1:-1)[0].meetingDate)}</div>` : ''}
       <div class="form-row">
-        <div class="form-field"><label>作者</label><input type="text" id="e-author" placeholder="你的名字"></div>
-        <div class="form-field"><label>日期</label><input type="date" id="e-date" value="${today}"></div>
+        <div class="form-field"><label>会议日期</label><input type="date" id="e-meeting-date" value="${today}"></div>
+        <div class="form-field"><label>记录人</label><input type="text" id="e-wl-author" placeholder="你的名字"></div>
       </div>
       <div class="form-field" style="margin-bottom:8px">
-        <label>进展内容</label>
-        <textarea id="e-content" placeholder="描述本次进展、遇到的问题或下一步计划…"></textarea>
+        <label>本周完成</label>
+        <textarea id="e-completed" placeholder="这周做了什么、达成了哪些进展…" style="min-height:64px"></textarea>
       </div>
-      <button class="btn btn-primary btn-sm" onclick="addUpdate('${esc(id)}')">添加进展</button>
+      <div class="form-field" style="margin-bottom:8px">
+        <label>下周计划</label>
+        <textarea id="e-nextplan" placeholder="下周/接下来要做什么、需要跟进什么…" style="min-height:64px"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="addWeeklyLog('${esc(id)}')">保存周会记录</button>
     </div>
 
     <!-- 里程碑 -->
@@ -1513,17 +1633,19 @@ function saveBasic(id) {
   flash('状态和进度已保存');
 }
 
-function addUpdate(id) {
-  const author = document.getElementById('e-author').value.trim();
-  const date = document.getElementById('e-date').value;
-  const content = document.getElementById('e-content').value.trim();
-  if (!author || !content) { alert('请填写作者和进展内容'); return; }
-  const p = appData.products.find(x=>x.id===id);
-  p.updates.unshift({ date, author, content });
-  saveData(); renderCards();
-  document.getElementById('e-content').value = '';
-  document.getElementById('e-author').value = '';
-  flash('进展已添加');
+function addWeeklyLog(id) {
+  const meetingDate = document.getElementById('e-meeting-date').value;
+  const author = document.getElementById('e-wl-author').value.trim();
+  const completed = document.getElementById('e-completed').value.trim();
+  const nextPlan = document.getElementById('e-nextplan').value.trim();
+  if (!meetingDate) { alert('请选择会议日期'); return; }
+  if (!completed && !nextPlan) { alert('请至少填写本周完成或下周计划'); return; }
+  const p = appData.products.find(x => x.id === id);
+  if (!p.weeklyLogs) p.weeklyLogs = [];
+  p.weeklyLogs.unshift({ id: 'wl' + Date.now(), meetingDate, author, completed, nextPlan });
+  saveData(); renderCards(); renderDigest();
+  openEdit(id);
+  flash('周会记录已保存');
 }
 
 function milestoneRowHTML(id, m, i) {
@@ -1806,136 +1928,182 @@ function renderDetailPage(id) {
     : `background:linear-gradient(135deg,${heroColor} 0%,${heroColor}bb 100%);`;
   const docs = p.documents || [];
 
+  // sidebar: next steps compact
+  const nsAll = p.nextSteps || [];
+  const nsTodayRef = new Date();
+  const nsSidebarHTML = nsAll.length ? nsAll.slice(0,5).map(s => {
+    return `<div class="sb-ns-item">
+      <div class="sb-ns-check ${s.done?'done':''}">${s.done?'✓':''}</div>
+      <div class="sb-ns-text ${s.done?'done':''}">${esc(s.text)}</div>
+    </div>`;
+  }).join('') + (nsAll.length > 5 ? `<div style="font-size:11px;color:#94a3b8;padding-top:4px">还有 ${nsAll.length-5} 项</div>` : '')
+  : `<div style="font-size:12px;color:#94a3b8">暂无行动项</div>`;
+
   const page = document.getElementById('detail-page');
   page.innerHTML = `
     <div class="detail-nav">
       <button class="back-btn" onclick="closeDetailPage()">← 返回看板</button>
       <span style="font-size:12px;color:var(--text-muted);font-family:monospace">${esc(p.id)}</span>
-      ${editMode ? `<button class="hbtn" style="margin-left:auto" onclick="openEdit('${esc(id)}')">✏️ 编辑</button>` : ''}
+      ${editMode ? `<button class="hbtn" style="margin-left:auto" onclick="openEdit('${esc(id)}')">编辑</button>` : ''}
     </div>
 
-    <div class="dp-hero" style="${heroBg}">
-      ${p.coverImage ? '<div class="dp-hero-overlay"></div>' : ''}
-      <div class="dp-hero-content">
-        <div style="margin-bottom:10px">
-          <span style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:white;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;backdrop-filter:blur(4px)">
-            <span style="width:6px;height:6px;border-radius:50%;background:white;display:inline-block"></span>${esc(p.status)}
-          </span>
-        </div>
-        <div class="dp-hero-title">${esc(p.name)}</div>
-        <div class="dp-hero-meta">
-          <span style="display:inline-flex;align-items:center;gap:6px">
-            <span style="width:22px;height:22px;border-radius:50%;background:${esc(p.ownerBg)};border:2px solid rgba(255,255,255,.6);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white">${esc(p.owner[0])}</span>
-            ${esc(p.owner)}
-          </span>
-          <span style="opacity:.5">·</span>
-          <span>${esc(p.group || p.line)}</span>
-          ${p.line ? `<span style="opacity:.5">·</span><span>${esc(p.line)}</span>` : ''}
-          ${p.startDate ? `<span style="opacity:.5">·</span><span>启动 ${esc(p.startDate)}</span>` : ''}
-          ${p.targetDate ? `<span style="opacity:.5">·</span><span>目标 ${esc(p.targetDate)}</span>` : ''}
-        </div>
-        ${p.description ? `<div class="dp-hero-desc">${esc(p.description)}</div>` : ''}
-      </div>
-      <div class="dp-hero-progress"><div style="height:100%;width:${p.progress}%;background:${pc}"></div></div>
-    </div>
+    <div class="dp-layout">
 
-    <div class="dp-stats-row">
-      <div class="dp-stat">
-        <div class="dp-stat-num" style="color:${pc}">${p.progress}%</div>
-        <div class="dp-stat-label">整体进度</div>
-        <div class="dp-stat-bar"><div style="height:100%;width:${p.progress}%;background:${pc};border-radius:3px"></div></div>
-      </div>
-      <div class="dp-stat">
-        <div class="dp-stat-num">${done}<span style="font-size:18px;font-weight:500;color:var(--text-muted)"> / ${total}</span></div>
-        <div class="dp-stat-label">里程碑完成</div>
-      </div>
-      <div class="dp-stat">
-        <div class="dp-stat-num" style="color:${cdColor}">${cdNum}</div>
-        <div class="dp-stat-label">${cdLabel}</div>
-      </div>
-    </div>
+      <!-- 左主内容 -->
+      <div class="dp-main">
 
-    <div class="detail-content">
-
-      ${total > 0 ? `
-      <div class="detail-section">
-        <div class="detail-section-title">里程碑进度</div>
-        <div class="ms-tl">
-          ${p.milestones.map(m => `
-          <div class="ms-item ${esc(m.status)}">
-            <div class="ms-dot">${m.status==='done'?'✓':m.status==='current'?'▶':''}</div>
-            <div class="ms-name">${esc(m.name)}</div>
-            <div class="ms-date">${esc(m.date)}</div>
-          </div>`).join('')}
-        </div>
-      </div>` : ''}
-
-      ${p.goal ? `
-      <div class="detail-section">
-        <div class="detail-section-title">产品目标</div>
-        <div class="goal-box">${esc(p.goal)}</div>
-      </div>` : ''}
-
-      ${docs.length > 0 ? `
-      <div class="detail-section">
-        <div class="detail-section-title">文档附件</div>
-        <div class="doc-list">
-          ${docs.map(d => `
-          <div class="doc-item">
-            <div class="doc-icon">${docIcon(d.type)}</div>
-            <div class="doc-info">
-              <div class="doc-name">${esc(d.name)}</div>
-              <div class="doc-meta">${esc(d.type)} · ${esc(d.addedBy)} · ${esc(d.addedDate)}</div>
+        <div class="dp-hero" style="${heroBg}">
+          ${p.coverImage ? '<div class="dp-hero-overlay"></div>' : ''}
+          <div class="dp-hero-content">
+            <div style="margin-bottom:10px">
+              <span style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.32);color:white;padding:3px 11px;border-radius:20px;font-size:12px;font-weight:600">
+                <span style="width:5px;height:5px;border-radius:50%;background:white;display:inline-block"></span>${esc(p.status)}
+              </span>
             </div>
-            <div class="doc-actions">
-              <a class="doc-open-btn" href="${esc(d.url)}" target="_blank" rel="noopener">打开</a>
+            <div class="dp-hero-title">${esc(p.name)}</div>
+            <div class="dp-hero-meta">
+              <span style="display:inline-flex;align-items:center;gap:6px">
+                <span style="width:20px;height:20px;border-radius:50%;background:${esc(p.ownerBg)};display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white">${esc(p.owner[0])}</span>
+                ${esc(p.owner)}
+              </span>
+              <span style="opacity:.45">·</span><span>${esc(p.group||'—')}</span>
+              ${p.line?`<span style="opacity:.45">·</span><span>${esc(p.line)}</span>`:''}
             </div>
-          </div>`).join('')}
-        </div>
-      </div>` : ''}
-
-      ${(() => {
-        const ns = p.nextSteps || [];
-        const today = new Date();
-        const items = ns.map(s => {
-          let dueHTML = '';
-          if (s.dueDate) {
-            const d = new Date(s.dueDate);
-            const diff = Math.ceil((d - today) / 86400000);
-            const cls = diff < 0 ? 'overdue' : diff <= 7 ? 'soon' : 'ok';
-            const label = diff < 0 ? `超期 ${Math.abs(diff)} 天` : diff === 0 ? '今天' : `${diff} 天后`;
-            dueHTML = `<span class="ns-due ${cls}">${esc(label)}</span>`;
-          }
-          return `<div class="ns-item ${s.done?'done':''}">
-            <div class="ns-check" onclick="toggleNextStep('${esc(p.id)}','${esc(s.id)}')">${s.done?'✓':''}</div>
-            <div class="ns-body">
-              <div class="ns-text">${esc(s.text)}</div>
-              <div class="ns-meta">
-                ${s.assignee?`<span class="ns-assignee">@ ${esc(s.assignee)}</span>`:''}
-                ${dueHTML}
-              </div>
-            </div>
-          </div>`;
-        }).join('');
-        return `<div class="detail-section">
-          <div class="detail-section-title">下一步行动</div>
-          ${ns.length ? `<div class="ns-list">${items}</div>` : `<div class="ns-empty">暂无行动项 · 在编辑模式下添加</div>`}
-        </div>`;
-      })()}
-
-      ${p.updates && p.updates.length > 0 ? `
-      <div class="detail-section">
-        <div class="detail-section-title">最新进展</div>
-        ${p.updates.map(u => `
-        <div class="update-item">
-          <div class="update-meta">
-            <span style="font-weight:600;color:var(--text)">${esc(u.author)}</span>
-            <span>${esc(u.date)}</span>
+            ${p.description?`<div class="dp-hero-desc">${esc(p.description)}</div>`:''}
           </div>
-          <div class="update-content">${esc(u.content)}</div>
-        </div>`).join('')}
-      </div>` : ''}
+          <div class="dp-hero-progress"><div style="height:100%;width:${p.progress}%;background:${pc}"></div></div>
+        </div>
 
+        ${total > 0 ? `
+        <div class="detail-section" style="margin-top:20px">
+          <div class="detail-section-title">里程碑进度</div>
+          <div class="ms-tl">
+            ${p.milestones.map(m => {
+              const todayMs = new Date(); todayMs.setHours(0,0,0,0);
+              const mDate = m.date ? new Date(m.date) : null;
+              const overdue = m.status !== 'done' && mDate && mDate < todayMs;
+              const overdueDays = overdue ? Math.ceil((todayMs - mDate) / 86400000) : 0;
+              const cls = overdue ? 'overdue' : m.status;
+              return `<div class="ms-item ${esc(cls)}">
+                <div class="ms-dot">${m.status==='done'?'✓':overdue?'!':m.status==='current'?'●':''}</div>
+                <div class="ms-name">${esc(m.name)}</div>
+                <div class="ms-date">${esc(m.date)}</div>
+                ${overdue ? `<div class="overdue-tag">超期 ${overdueDays} 天</div>` : ''}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>` : ''}
+
+        ${p.goal ? `
+        <div class="detail-section">
+          <div class="detail-section-title">产品目标</div>
+          <div class="goal-box">${esc(p.goal)}</div>
+        </div>` : ''}
+
+        ${nsAll.length || editMode ? `
+        <div class="detail-section">
+          <div class="detail-section-title">下一步行动</div>
+          ${nsAll.length ? `<div class="ns-list">${nsAll.map(s => {
+            let dueHTML = '';
+            if (s.dueDate) {
+              const diff = Math.ceil((new Date(s.dueDate) - nsTodayRef) / 86400000);
+              const cls = diff < 0 ? 'overdue' : diff <= 7 ? 'soon' : 'ok';
+              const label = diff < 0 ? `超期 ${Math.abs(diff)} 天` : diff === 0 ? '今天截止' : `${diff} 天后`;
+              dueHTML = `<span class="ns-due ${cls}">${label}</span>`;
+            }
+            return `<div class="ns-item ${s.done?'done':''}">
+              <div class="ns-check" onclick="toggleNextStep('${esc(p.id)}','${esc(s.id)}')">${s.done?'✓':''}</div>
+              <div class="ns-body">
+                <div class="ns-text">${esc(s.text)}</div>
+                <div class="ns-meta">${s.assignee?`<span class="ns-assignee">@ ${esc(s.assignee)}</span>`:''}${dueHTML}</div>
+              </div>
+            </div>`;
+          }).join('')}</div>` : `<div class="ns-empty">暂无行动项 · 点右上角编辑添加</div>`}
+        </div>` : ''}
+
+        ${docs.length > 0 ? `
+        <div class="detail-section">
+          <div class="detail-section-title">文档附件</div>
+          <div class="doc-list">
+            ${docs.map(d => `
+            <div class="doc-item">
+              <div class="doc-icon">${docIcon(d.type)}</div>
+              <div class="doc-info">
+                <div class="doc-name">${esc(d.name)}</div>
+                <div class="doc-meta">${esc(d.type)} · ${esc(d.addedBy)} · ${esc(d.addedDate)}</div>
+              </div>
+              <div class="doc-actions"><a class="doc-open-btn" href="${esc(d.url)}" target="_blank" rel="noopener">打开</a></div>
+            </div>`).join('')}
+          </div>
+        </div>` : ''}
+
+        ${(() => {
+          const logs = ((p.weeklyLogs||[]).length ? p.weeklyLogs : []).slice().sort((a,b)=>b.meetingDate>a.meetingDate?1:-1);
+          if (!logs.length) return `<div class="detail-section"><div class="detail-section-title">周会记录</div><div class="ns-empty">暂无周会记录 · 点编辑添加</div></div>`;
+          return `<div class="detail-section">
+            <div class="detail-section-title">周会记录</div>
+            ${logs.map(l=>`
+            <div class="wl-card">
+              <div class="wl-header">
+                <span class="wl-date">${esc(l.meetingDate)} 周会</span>
+                <span class="wl-author">${esc(l.author||'')}</span>
+              </div>
+              <div class="wl-body">
+                <div class="wl-completed"><div class="wl-label">本周完成</div><div class="wl-text">${esc(l.completed||'—')}</div></div>
+                <div class="wl-nextplan"><div class="wl-label">下周计划</div><div class="wl-text">${esc(l.nextPlan||'—')}</div></div>
+              </div>
+            </div>`).join('')}
+          </div>`;
+        })()}
+
+      </div>
+
+      <!-- 右侧边栏 -->
+      <div class="dp-sidebar">
+
+        <div class="sb-block">
+          <div class="sb-heading">状态</div>
+          <span class="badge status-${esc(p.status)}" style="font-size:12px;padding:4px 12px">
+            <span class="badge-dot status-dot-${esc(p.status)}"></span>${esc(p.status)}
+          </span>
+        </div>
+
+        <div class="sb-block">
+          <div class="sb-heading">整体进度</div>
+          <div class="sb-progress-num" style="color:${pc}">${p.progress}%</div>
+          <div class="sb-progress-bar"><div style="height:100%;width:${p.progress}%;background:${pc}"></div></div>
+        </div>
+
+        <div class="sb-block">
+          <div class="sb-heading">基本信息</div>
+          <div class="sb-meta-row"><span class="sb-meta-label">负责人</span><span class="sb-meta-val">${esc(p.owner)}</span></div>
+          <div class="sb-meta-row"><span class="sb-meta-label">所属团队</span><span class="sb-meta-val">${esc(p.group||'—')}</span></div>
+          ${p.line?`<div class="sb-meta-row"><span class="sb-meta-label">业务线</span><span class="sb-meta-val">${esc(p.line)}</span></div>`:''}
+          ${p.startDate?`<div class="sb-meta-row"><span class="sb-meta-label">启动</span><span class="sb-meta-val">${esc(p.startDate)}</span></div>`:''}
+          ${p.targetDate?`<div class="sb-meta-row"><span class="sb-meta-label">目标</span><span class="sb-meta-val">${esc(p.targetDate)}</span></div>`:''}
+        </div>
+
+        <div class="sb-block">
+          <div class="sb-heading">里程碑</div>
+          <div style="font-size:20px;font-weight:800;line-height:1;margin-bottom:4px">${done}<span style="font-size:13px;font-weight:500;color:#94a3b8"> / ${total} 完成</span></div>
+          ${(() => {
+            const cur = p.milestones.find(m => m.status==='current') || p.milestones.find(m => m.status==='upcoming');
+            return cur ? `<div style="font-size:12px;color:#64748b;margin-top:6px">当前：${esc(cur.name)}</div>` : '';
+          })()}
+        </div>
+
+        <div class="sb-block">
+          <div class="sb-heading">截止倒计时</div>
+          <div style="font-size:20px;font-weight:800;line-height:1;color:${cdColor}">${cdNum}</div>
+          <div style="font-size:11px;color:#94a3b8;margin-top:4px">${cdLabel}</div>
+        </div>
+
+        <div class="sb-block">
+          <div class="sb-heading">下一步行动 (${nsAll.length})</div>
+          ${nsSidebarHTML}
+        </div>
+
+      </div>
     </div>
   `;
   page.classList.add('open');
