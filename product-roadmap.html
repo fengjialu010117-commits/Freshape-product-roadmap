@@ -63,6 +63,13 @@
   .tp-prog { width: 54px; height: 5px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
   .tp-prog-fill { height: 100%; border-radius: 3px; }
   .tp-pct { font-size: 11px; font-weight: 600; min-width: 28px; text-align: right; }
+  .team-panel-body { transition: none; }
+  .team-panel-body.collapsed { display: none; }
+  .team-chevron { margin-left: auto; font-size: 13px; opacity: .7; transition: transform .2s; }
+  .team-chevron.collapsed { transform: rotate(-90deg); }
+  .team-avatar-img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,.6); flex-shrink: 0; }
+  .avatar-upload-btn { position: absolute; bottom: -2px; right: -2px; width: 18px; height: 18px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+  .team-avatar-wrap { position: relative; flex-shrink: 0; }
 
   /* MAIN */
   .main { padding: 20px 28px; }
@@ -306,6 +313,7 @@
 const DEFAULT_DATA = {
   lastUpdated: "2026-06-16",
   company: "Freshape",
+  teamAvatars: {},
   products: [
     {
       id: "P001",
@@ -667,6 +675,7 @@ let viewMode = 'group';
 let filters = { status: 'all', line: 'all' };
 const STORAGE_KEY = 'hiwood-roadmap-v2';
 const MEMBERS = ['Haibo Zhang', 'Yong Liu'];
+const teamCollapsed = {};
 const SUPABASE_URL = 'https://sftmritlhxbluhxtddqv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmdG1yaXRsaHhibHVoeHRkZHF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NzgzOTAsImV4cCI6MjA5NzE1NDM5MH0.5Ta6XTE-I3H2SfrFgYw40wWGjCmEnL03Hx6m5ahTJng';
 
@@ -890,6 +899,7 @@ function renderTeamPanels(list, grid) {
   const groupOrder = ['Yuetai Shang', 'Yang Li', 'Haibo Zhang', 'Yong Liu'];
   const groupColors = { 'Yuetai Shang': '#2563eb', 'Yang Li': '#d97706', 'Haibo Zhang': '#16a34a', 'Yong Liu': '#7c3aed' };
   const activeGroups = groupOrder.filter(g => appData.products.some(p => (p.group||'Other') === g));
+  const avatars = appData.teamAvatars || {};
   grid.className = '';
   grid.innerHTML = `<div class="team-panels">` + activeGroups.map(group => {
     const items = list.filter(p => (p.group||'Other') === group);
@@ -897,17 +907,28 @@ function renderTeamPanels(list, grid) {
     const allItems = appData.products.filter(p => (p.group||'Other') === group);
     const color = groupColors[group] || '#6b7280';
     const avg = Math.round(allItems.reduce((a,p) => a+p.progress, 0) / allItems.length);
-    const initial = group.charAt(0).toUpperCase();
+    const collapsed = teamCollapsed[group] || false;
+    const avatarHTML = avatars[group]
+      ? `<img src="${avatars[group]}" class="team-avatar-img">`
+      : `<div class="team-avatar-lg">${group.charAt(0).toUpperCase()}</div>`;
+    const uploadBtn = editMode
+      ? `<label style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.3)" title="上传头像">
+           📷<input type="file" accept="image/*" style="display:none" onchange="uploadTeamAvatar('${esc(group)}',this)">
+         </label>` : '';
     return `
     <div class="team-panel">
-      <div class="team-panel-header" style="background:${color}">
-        <div class="team-avatar-lg">${initial}</div>
-        <div>
+      <div class="team-panel-header" style="background:${color};cursor:pointer" onclick="toggleTeam('${esc(group)}')">
+        <div class="team-avatar-wrap" style="position:relative">
+          ${avatarHTML}
+          ${uploadBtn}
+        </div>
+        <div style="flex:1;min-width:0">
           <div class="team-panel-name">${esc(group)}</div>
           <div class="team-panel-meta">${allItems.length} 个产品 · 平均 ${avg}%</div>
         </div>
+        <div class="team-chevron ${collapsed ? 'collapsed' : ''}">▾</div>
       </div>
-      <div class="team-panel-body">
+      <div class="team-panel-body ${collapsed ? 'collapsed' : ''}" id="tpb-${esc(group).replace(/\s/g,'_')}">
         ${items.map(p => {
           const pc = p.progress >= 100 ? '#16a34a' : p.progress >= 60 ? '#2563eb' : p.progress >= 30 ? '#d97706' : '#9ca3af';
           return `<div class="tp-row" onclick="openDetailPage('${esc(p.id)}')">
@@ -924,6 +945,29 @@ function renderTeamPanels(list, grid) {
       </div>
     </div>`;
   }).join('') + `</div>`;
+}
+
+function toggleTeam(group) {
+  teamCollapsed[group] = !teamCollapsed[group];
+  const body = document.getElementById('tpb-' + group.replace(/\s/g,'_'));
+  const chevron = body && body.previousElementSibling && body.previousElementSibling.querySelector('.team-chevron');
+  if (body) body.classList.toggle('collapsed', teamCollapsed[group]);
+  if (chevron) chevron.classList.toggle('collapsed', teamCollapsed[group]);
+}
+
+function uploadTeamAvatar(group, input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 500000) { alert('图片太大，请压缩到 500KB 以内'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    if (!appData.teamAvatars) appData.teamAvatars = {};
+    appData.teamAvatars[group] = e.target.result;
+    saveData();
+    renderCards();
+    flash(group + ' 头像已更新');
+  };
+  reader.readAsDataURL(file);
 }
 
 function renderGrouped(list, grid) {
