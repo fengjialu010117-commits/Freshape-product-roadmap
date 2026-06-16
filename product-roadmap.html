@@ -1130,7 +1130,7 @@ function createProduct() {
     line,
     lineColor: lineColors[line] || '#6b7280',
     owner,
-    ownerBg: ownerColors[existingCount % ownerColors.length],
+    ownerBg: ownerColors[maxNum % ownerColors.length],
     status: document.getElementById('c-status').value,
     progress: 0,
     startDate: document.getElementById('c-start').value || new Date().toISOString().slice(0,10),
