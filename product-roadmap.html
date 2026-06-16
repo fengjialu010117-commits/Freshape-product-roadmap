@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>产品研发进度看板</title>
+<style>
+  :root {
+    --primary: #2563eb; --primary-light: #eff6ff;
+    --success: #16a34a; --success-light: #f0fdf4;
+    --warning: #d97706; --warning-light: #fffbeb;
+    --danger: #dc2626; --danger-light: #fef2f2;
+    --gray: #6b7280; --gray-light: #f9fafb;
+    --border: #e5e7eb; --text: #111827; --text-muted: #6b7280;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f3f4f6; color: var(--text); }
+
+  /* HEADER */
+  .header { background: white; border-bottom: 1px solid var(--border); padding: 0 28px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,.06); gap: 12px; }
+  .header-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .logo { width: 34px; height: 34px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 17px; font-weight: 700; flex-shrink: 0; }
+  .header-title { font-size: 16px; font-weight: 600; white-space: nowrap; }
+  .header-sub { font-size: 11px; color: var(--text-muted); }
+  .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .hbtn { padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); background: white; font-size: 13px; cursor: pointer; color: var(--text); transition: all .15s; white-space: nowrap; }
+  .hbtn:hover { background: var(--gray-light); }
+  .hbtn.edit-active { background: #fef9c3; border-color: #fbbf24; color: #92400e; font-weight: 600; }
+  .hbtn.primary { background: var(--primary); color: white; border-color: var(--primary); }
+  .hbtn.primary:hover { background: #1d4ed8; }
+
+  /* TOOLBAR */
+  .toolbar { background: white; border-bottom: 1px solid var(--border); padding: 10px 28px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .filter-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .filter-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .fbtn { padding: 4px 12px; border-radius: 16px; border: 1px solid var(--border); background: white; font-size: 12px; cursor: pointer; color: var(--text); transition: all .15s; }
+  .fbtn:hover { border-color: var(--primary); color: var(--primary); }
+  .fbtn.active { background: var(--primary); color: white; border-color: var(--primary); }
+  .search-box { margin-left: auto; display: flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; background: var(--gray-light); }
+  .search-box input { border: none; background: transparent; font-size: 13px; outline: none; width: 160px; }
+
+  /* STATS */
+  .stats { padding: 20px 28px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+  .stat-card { background: white; border-radius: 10px; padding: 16px; border: 1px solid var(--border); }
+  .stat-num { font-size: 28px; font-weight: 700; line-height: 1; }
+  .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+
+  /* MAIN */
+  .main { padding: 20px 28px; }
+  .section-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .section-title span { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+
+  /* GROUP VIEW */
+  .group-section { margin-bottom: 28px; }
+  .group-header { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 10px; margin-bottom: 14px; }
+  .group-header-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .group-header-name { font-size: 16px; font-weight: 700; letter-spacing: .01em; }
+  .group-header-meta { font-size: 12px; opacity: .75; margin-left: 4px; }
+  .group-header-progress { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .group-mini-bar { width: 80px; height: 6px; background: rgba(255,255,255,.35); border-radius: 3px; overflow: hidden; }
+  .group-mini-fill { height: 100%; border-radius: 3px; background: rgba(255,255,255,.9); }
+  .group-mini-pct { font-size: 12px; font-weight: 600; }
+
+  /* VIEW TOGGLE */
+  .view-toggle { display: flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; margin-left: auto; }
+  .vtbtn { padding: 4px 12px; border: none; background: white; font-size: 12px; cursor: pointer; color: var(--text-muted); transition: all .15s; }
+  .vtbtn.active { background: var(--primary); color: white; }
+  .vtbtn:hover:not(.active) { background: var(--gray-light); }
+
+  /* CARD */
+  .card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 18px; cursor: pointer; transition: all .2s; position: relative; overflow: hidden; }
+  .card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.09); transform: translateY(-1px); border-color: #93c5fd; }
+  .card-line-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .card-id { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+  .card-actions { display: flex; gap: 6px; align-items: center; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 500; }
+  .badge-dot { width: 5px; height: 5px; border-radius: 50%; }
+  .edit-card-btn { display: none; padding: 3px 10px; border-radius: 6px; border: 1px solid #fbbf24; background: #fef9c3; color: #92400e; font-size: 11px; cursor: pointer; font-weight: 500; }
+  .edit-mode .edit-card-btn { display: inline-block; }
+  .card-name { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+  .card-line { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+  .card-desc { font-size: 13px; color: #374151; line-height: 1.6; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .progress-wrap { margin-bottom: 12px; }
+  .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+  .progress-text { font-size: 11px; color: var(--text-muted); }
+  .progress-pct { font-size: 13px; font-weight: 600; }
+  .progress-bar { height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; }
+  .card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 10px; }
+  .card-owner { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-muted); }
+  .avatar { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; font-weight: 600; }
+  .card-dates { font-size: 11px; color: var(--text-muted); }
+  .doc-count { font-size: 11px; color: var(--primary); background: var(--primary-light); padding: 2px 7px; border-radius: 8px; }
+
+  /* STATUS */
+  .status-规划中 { background: #f0f9ff; color: #0369a1; }
+  .status-dot-规划中 { background: #0369a1; }
+  .status-推进中 { background: #fffbeb; color: #b45309; }
+  .status-dot-推进中 { background: #f59e0b; }
+  .status-测试中 { background: #f5f3ff; color: #6d28d9; }
+  .status-dot-测试中 { background: #7c3aed; }
+  .status-已上线 { background: var(--success-light); color: var(--success); }
+  .status-dot-已上线 { background: var(--success); }
+  .status-暂停 { background: #f9fafb; color: #6b7280; }
+  .status-dot-暂停 { background: #9ca3af; }
+
+  /* MODAL BASE */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 200; align-items: flex-start; justify-content: center; padding: 32px 16px; overflow-y: auto; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: 14px; width: 100%; max-width: 680px; box-shadow: 0 20px 60px rgba(0,0,0,.18); margin: auto; }
+  .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; position: sticky; top: 0; background: white; z-index: 1; border-radius: 14px 14px 0 0; }
+  .modal-title-wrap .modal-id { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+  .modal-title { font-size: 18px; font-weight: 700; }
+  .modal-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .modal-close { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; color: var(--gray); flex-shrink: 0; margin-left: 8px; }
+  .modal-close:hover { background: var(--gray-light); }
+  .modal-body { padding: 20px 24px; max-height: calc(90vh - 100px); overflow-y: auto; }
+  .modal-section { margin-bottom: 22px; }
+  .modal-section-title { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+  .goal-box { background: var(--primary-light); border-left: 3px solid var(--primary); padding: 12px 14px; border-radius: 0 8px 8px 0; font-size: 13px; line-height: 1.7; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .info-item { background: var(--gray-light); padding: 10px 12px; border-radius: 8px; }
+  .info-item .label { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; }
+  .info-item .value { font-size: 13px; font-weight: 500; }
+  .big-progress-bar { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+  .big-progress-fill { height: 100%; border-radius: 4px; }
+  .big-progress-pct { font-size: 20px; font-weight: 700; }
+
+  /* TIMELINE */
+  .timeline { position: relative; padding-left: 22px; }
+  .timeline::before { content: ''; position: absolute; left: 6px; top: 6px; bottom: 6px; width: 2px; background: var(--border); }
+  .tl-item { position: relative; padding-bottom: 16px; }
+  .tl-item:last-child { padding-bottom: 0; }
+  .tl-dot { position: absolute; left: -22px; top: 3px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 2px #e5e7eb; background: #e5e7eb; }
+  .tl-dot.done { background: var(--success); box-shadow: 0 0 0 2px #bbf7d0; }
+  .tl-dot.current { background: var(--warning); box-shadow: 0 0 0 2px #fde68a; }
+  .tl-name { font-size: 13px; font-weight: 500; }
+  .tl-date { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .tl-note { font-size: 12px; color: #374151; margin-top: 4px; background: var(--gray-light); padding: 5px 8px; border-radius: 5px; }
+
+  /* UPDATES */
+  .update-item { padding: 10px 12px; background: var(--gray-light); border-radius: 8px; margin-bottom: 8px; }
+  .update-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+  .update-content { font-size: 13px; line-height: 1.6; }
+
+  /* DOCUMENTS */
+  .doc-list { display: flex; flex-direction: column; gap: 8px; }
+  .doc-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: white; }
+  .doc-icon { font-size: 20px; flex-shrink: 0; }
+  .doc-info { flex: 1; min-width: 0; }
+  .doc-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .doc-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .doc-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .doc-open-btn { padding: 4px 10px; border-radius: 6px; background: var(--primary); color: white; border: none; font-size: 12px; cursor: pointer; text-decoration: none; display: inline-block; }
+  .doc-del-btn { padding: 4px 8px; border-radius: 6px; background: white; color: var(--danger); border: 1px solid #fca5a5; font-size: 12px; cursor: pointer; display: none; }
+  .edit-mode-modal .doc-del-btn { display: inline-block; }
+  .no-docs { text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px; border: 1px dashed var(--border); border-radius: 8px; }
+
+  /* ADD DOC FORM */
+  .add-doc-form { border: 1px solid var(--border); border-radius: 8px; padding: 14px; background: var(--gray-light); display: none; }
+  .edit-mode-modal .add-doc-form { display: block; }
+  .form-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .form-field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 120px; }
+  .form-field label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+  .form-field input, .form-field select, .form-field textarea { padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; background: white; font-family: inherit; }
+  .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,.1); }
+  .form-field textarea { resize: vertical; min-height: 70px; }
+  .btn { padding: 7px 16px; border-radius: 7px; border: none; font-size: 13px; cursor: pointer; font-weight: 500; transition: all .15s; }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-secondary { background: white; color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--gray-light); }
+  .btn-danger { background: white; color: var(--danger); border: 1px solid #fca5a5; }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+  /* EDIT PRODUCT MODAL */
+  .edit-section { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+  .edit-section-title { font-size: 12px; font-weight: 600; color: #92400e; margin-bottom: 10px; }
+  .range-wrap { display: flex; align-items: center; gap: 10px; }
+  .range-wrap input[type=range] { flex: 1; }
+  .range-val { font-size: 15px; font-weight: 700; color: var(--primary); min-width: 40px; }
+  .milestone-edit-list { display: flex; flex-direction: column; gap: 6px; }
+  .milestone-edit-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: white; border-radius: 6px; border: 1px solid var(--border); }
+  .milestone-edit-item .m-name { flex: 1; font-size: 13px; }
+  .milestone-edit-item select { padding: 3px 6px; border: 1px solid var(--border); border-radius: 5px; font-size: 12px; }
+  .status-select { padding: 6px 10px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; background: white; }
+
+  /* IMPORT HIDDEN */
+  #import-input { display: none; }
+
+  /* NO RESULTS */
+  .no-results { text-align: center; padding: 50px; color: var(--text-muted); }
+  .no-results .icon { font-size: 40px; margin-bottom: 10px; }
+
+  @media (max-width: 640px) {
+    .header, .toolbar, .stats, .main { padding-left: 14px; padding-right: 14px; }
+    .info-grid { grid-template-columns: 1fr; }
+    .modal-body { padding: 14px 16px; }
+    .modal-header { padding: 14px 16px; }
+    .header-right .hbtn span { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+  DATA — 各产品负责人在此修改数据，保存后刷新浏览器即可（文档链接在浏览器内添加，无需改这里）
+================================================================ -->
+<script>
+const DEFAULT_DATA = {
+  lastUpdated: "2026-06-16",
+  company: "HiWood",
+  products: [
+    {
+      id: "P001",
+      name: "竹制桌面收纳套组",
+      line: "Hiplant",
+      lineColor: "#16a34a",
+      owner: "李明",
+      ownerBg: "#2563eb",
+      status: "推进中",
+      progress: 65,
+      startDate: "2026-03-01",
+      targetDate: "2026-08-31",
+      description: "面向居家办公场景的模块化竹制桌面收纳系统，含笔筒、文件架、手机支架三件套。",
+      goal: "在 Amazon US/DE 站打造桌面收纳品类 Best Seller，首年 GMV 目标 150 万美元。主打天然竹制材料 + 模块化拼接设计，差异化于同类塑料产品。",
+      milestones: [
+        { name: "产品需求确认", date: "2026-03-15", status: "done", note: "完成竞品分析及用户痛点梳理" },
+        { name: "结构设计 & 打样", date: "2026-04-30", status: "done", note: "完成 3 轮打样，确定最终版结构" },
+        { name: "供应商认证 & 小批量试产", date: "2026-06-15", status: "current", note: "当前阶段：首批 500 套试产中" },
+        { name: "亚马逊 listing 上线（US）", date: "2026-07-20", status: "upcoming", note: "" },
+        { name: "德国站上线", date: "2026-08-31", status: "upcoming", note: "" }
+      ],
+      updates: [
+        { date: "2026-06-12", author: "李明", content: "供应商完成首批试产 200 套，质检报告预计本周到达，尺寸精度符合要求，等待表面处理确认。" }
+      ],
+      documents: []
+    },
+    {
+      id: "P002",
+      name: "实木手机壳·iPhone 系列",
+      line: "Sunet",
+      lineColor: "#ea580c",
+      owner: "张晓",
+      ownerBg: "#ea580c",
+      status: "已上线",
+      progress: 100,
+      startDate: "2025-10-01",
+      targetDate: "2026-02-28",
+      description: "天然实木 + 软硅胶内衬手机壳，覆盖 iPhone 15/16 全系，主攻欧洲礼品市场。",
+      goal: "欧洲站 2026 年 Q1 月均 GMV 突破 30 万欧元，Reviews 数量超过 500 条，平均评分 ≥ 4.5 星。",
+      milestones: [
+        { name: "产品立项", date: "2025-10-01", status: "done", note: "" },
+        { name: "模具 & 打样", date: "2025-11-30", status: "done", note: "" },
+        { name: "量产 & 头程入仓", date: "2026-01-15", status: "done", note: "" },
+        { name: "Amazon DE/FR/UK 上线", date: "2026-02-20", status: "done", note: "提前 8 天完成" },
+        { name: "Q1 销售目标达成", date: "2026-03-31", status: "done", note: "实际 GMV 32 万欧元，Reviews 623 条，4.6 星" }
+      ],
+      updates: [
+        { date: "2026-04-02", author: "张晓", content: "Q1 收官：GMV 32 万欧元，Reviews 623 条，评分 4.6 ★，全部目标达成。iPhone 17 系列模具立项已启动。" }
+      ],
+      documents: []
+    },
+    {
+      id: "P003",
+      name: "橡木键盘腕托",
+      line: "Hiplant",
+      lineColor: "#16a34a",
+      owner: "王芳",
+      ownerBg: "#7c3aed",
+      status: "规划中",
+      progress: 15,
+      startDate: "2026-06-01",
+      targetDate: "2026-11-30",
+      description: "天然橡木腕托，适配 60%/75%/TKL 多尺寸键盘，含磁吸防滑底座设计。",
+      goal: "切入机械键盘外设配件品类，目标 Amazon US 站首年销售 8000+ 件，建立键盘配件产品线基础。",
+      milestones: [
+        { name: "市场调研 & 竞品分析", date: "2026-06-30", status: "current", note: "进行中" },
+        { name: "产品需求文档（PRD）", date: "2026-07-20", status: "upcoming", note: "" },
+        { name: "结构设计 & 打样", date: "2026-09-15", status: "upcoming", note: "" },
+        { name: "小批量试产", date: "2026-10-31", status: "upcoming", note: "" },
+        { name: "上线发售", date: "2026-11-30", status: "upcoming", note: "" }
+      ],
+      updates: [
+        { date: "2026-06-10", author: "王芳", content: "完成初步竞品扫描，已整理 12 款主要竞品数据。本周开始用户访谈，下周出调研报告。" }
+      ],
+      documents: []
+    },
+    {
+      id: "P004",
+      name: "实木手机壳·三星系列",
+      line: "Sunet",
+      lineColor: "#ea580c",
+      owner: "张晓",
+      ownerBg: "#ea580c",
+      status: "规划中",
+      progress: 10,
+      startDate: "2026-06-15",
+      targetDate: "2026-12-31",
+      description: "基于 iPhone 系列手机壳成功经验，延伸至三星 Galaxy S25/S24 系列，覆盖 US/KR 市场。",
+      goal: "复用 iPhone 系列供应链和工艺，降低开发成本 30%；韩国站上线后首季度 GMV 目标 15 万美元。",
+      milestones: [
+        { name: "机型尺寸确认 & 模具立项", date: "2026-07-15", status: "upcoming", note: "" },
+        { name: "打样", date: "2026-09-01", status: "upcoming", note: "" },
+        { name: "Amazon US 上线", date: "2026-11-30", status: "upcoming", note: "" },
+        { name: "韩国站上线", date: "2026-12-31", status: "upcoming", note: "" }
+      ],
+      updates: [
+        { date: "2026-06-15", author: "张晓", content: "项目正式立项，S25 Ultra 尺寸资料已收集，模具供应商报价沟通中。" }
+      ],
+      documents: []
+    },
+    {
+      id: "P005",
+      name: "竹制旅行收纳包",
+      line: "Ulight",
+      lineColor: "#7c3aed",
+      owner: "陈浩",
+      ownerBg: "#7c3aed",
+      status: "测试中",
+      progress: 80,
+      startDate: "2026-01-10",
+      targetDate: "2026-07-31",
+      description: "竹纤维面料旅行收纳包，含 4 件套分装袋，主打环保可持续理念，面向北美中高端市场。",
+      goal: "以环保可持续为核心卖点，切入旅行配件品类，首年 Amazon US 站 GMV 目标 80 万美元，获取 DTC 独立站首批种子用户 2000 人。",
+      milestones: [
+        { name: "产品设计定稿", date: "2026-02-28", status: "done", note: "" },
+        { name: "环保认证（OEKO-TEX）", date: "2026-03-15", status: "done", note: "" },
+        { name: "量产", date: "2026-05-31", status: "done", note: "完成 2000 套首批量产" },
+        { name: "FBA 头程发货", date: "2026-06-20", status: "current", note: "货物在途，预计 6/28 到仓" },
+        { name: "Listing 上线 + 开广告", date: "2026-07-05", status: "upcoming", note: "" },
+        { name: "DTC 独立站同步发售", date: "2026-07-31", status: "upcoming", note: "" }
+      ],
+      updates: [
+        { date: "2026-06-14", author: "陈浩", content: "首批 2000 套已出仓，头程物流单号已录入，预计 6/28 到达 ONT8 仓库。Listing 主图已完成，A+ 内容设计稿审核中。" }
+      ],
+      documents: []
+    },
+    {
+      id: "P006",
+      name: "磁吸竹制车载手机支架",
+      line: "Ulight",
+      lineColor: "#7c3aed",
+      owner: "刘洋",
+      ownerBg: "#be185d",
+      status: "暂停",
+      progress: 35,
+      startDate: "2026-02-01",
+      targetDate: "2026-09-30",
+      description: "MagSafe 兼容的竹制车载手机支架，出风口/仪表台两用，限制：需通过 MagSafe 认证。",
+      goal: "切入车载配件品类，主打 MagSafe 生态 + 天然材料差异化，Amazon US 站年销售目标 5000 件。",
+      milestones: [
+        { name: "产品立项 & 方案评估", date: "2026-02-28", status: "done", note: "" },
+        { name: "MagSafe 认证方案调研", date: "2026-04-15", status: "done", note: "" },
+        { name: "认证申请（暂停等待预算）", date: "2026-05-01", status: "upcoming", note: "MagSafe 认证费超预算，等 Q3 审批" },
+        { name: "打样 & 量产", date: "2026-08-31", status: "upcoming", note: "" },
+        { name: "上线", date: "2026-09-30", status: "upcoming", note: "" }
+      ],
+      updates: [
+        { date: "2026-05-02", author: "刘洋", content: "暂停：Apple MagSafe 认证报价 12 万元，超出 Q2 预算。已提交 Q3 追加预算申请，等待 6 月底管理层审批。" }
+      ],
+      documents: []
+    }
+  ]
+};
+</script>
+
+<!-- ================================================================
+  以下为应用逻辑，无需修改
+================================================================ -->
+<!-- CREATE MODAL -->
+<div class="modal-overlay" id="create-overlay" onclick="overlayClick(event,'create-overlay')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-title">新建产品</div>
+        <div class="modal-subtitle">填写基本信息，创建后可在编辑模式继续补充里程碑和文档</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('create-overlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-field" style="flex:1">
+          <label>产品名称 *</label>
+          <input type="text" id="c-name" placeholder="如：竹制桌面收纳套组">
+        </div>
+        <div class="form-field" style="flex:1">
+          <label>产品线 *</label>
+          <select id="c-line">
+            <option value="Hiplant">Hiplant</option>
+            <option value="Sunet">Sunet</option>
+            <option value="Ulight">Ulight</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field" style="flex:1">
+          <label>负责人 *</label>
+          <input type="text" id="c-owner" placeholder="姓名">
+        </div>
+        <div class="form-field" style="flex:1">
+          <label>当前状态</label>
+          <select id="c-status">
+            <option>规划中</option>
+            <option>推进中</option>
+            <option>测试中</option>
+            <option>已上线</option>
+            <option>暂停</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field" style="flex:1">
+          <label>启动日期</label>
+          <input type="date" id="c-start">
+        </div>
+        <div class="form-field" style="flex:1">
+          <label>目标上线日期</label>
+          <input type="date" id="c-target">
+        </div>
+      </div>
+      <div class="form-field" style="margin-bottom:12px">
+        <label>一句话描述 *</label>
+        <input type="text" id="c-desc" placeholder="简短说明这个产品是什么">
+      </div>
+      <div class="form-field" style="margin-bottom:20px">
+        <label>产品目标</label>
+        <textarea id="c-goal" placeholder="这个产品要达成什么目标？（销售额、SKU 数量、市场定位等）" style="min-height:80px"></textarea>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:20px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:10px">🏁 里程碑计划 <span style="font-size:12px;color:var(--text-muted);font-weight:400">（选填，可后续补充）</span></div>
+        <div id="c-milestone-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+        <div class="form-row" style="align-items:flex-end">
+          <div class="form-field" style="flex:2">
+            <label>里程碑名称</label>
+            <input type="text" id="c-m-name" placeholder="如：完成打样">
+          </div>
+          <div class="form-field" style="flex:1">
+            <label>计划日期</label>
+            <input type="date" id="c-m-date">
+          </div>
+          <button class="btn btn-secondary btn-sm" style="flex-shrink:0;margin-bottom:1px" onclick="addCreateMilestone()">＋ 添加</button>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px">
+        <button class="btn btn-secondary" onclick="closeModal('create-overlay')">取消</button>
+        <button class="btn btn-primary" onclick="createProduct()">创建产品</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">H</div>
+    <div>
+      <div class="header-title" id="hdr-title">产品研发进度看板</div>
+      <div class="header-sub" id="hdr-sub"></div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="hbtn" id="edit-toggle-btn" onclick="toggleEditMode()">✏️ <span>编辑模式</span></button>
+    <button class="hbtn" onclick="exportData()">⬇ <span>导出</span></button>
+    <button class="hbtn primary" onclick="openCreate()">＋ <span>新建产品</span></button>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="filter-group">
+    <span class="filter-label">状态</span>
+    <button class="fbtn active" onclick="setFilter('status','all',this)">全部</button>
+    <button class="fbtn" onclick="setFilter('status','规划中',this)">规划中</button>
+    <button class="fbtn" onclick="setFilter('status','推进中',this)">推进中</button>
+    <button class="fbtn" onclick="setFilter('status','测试中',this)">测试中</button>
+    <button class="fbtn" onclick="setFilter('status','已上线',this)">已上线</button>
+    <button class="fbtn" onclick="setFilter('status','暂停',this)">暂停</button>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">产品线</span>
+    <div id="line-filters" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+  </div>
+  <div class="search-box">
+    <span style="font-size:13px;color:#9ca3af">🔍</span>
+    <input type="text" placeholder="搜索产品…" id="search-input" oninput="renderCards()">
+  </div>
+</div>
+
+<div class="stats" id="stats-area"></div>
+
+<div class="main">
+  <div class="section-title">产品列表 <span id="count-label"></span></div>
+  <div class="grid" id="card-grid"></div>
+  <div class="no-results" id="no-results" style="display:none">
+    <div class="icon">🔍</div><div>没有找到匹配的产品</div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detail-overlay" onclick="overlayClick(event,'detail-overlay')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-id" id="d-id"></div>
+        <div class="modal-title" id="d-name"></div>
+        <div class="modal-subtitle" id="d-subtitle"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('detail-overlay')">✕</button>
+    </div>
+    <div class="modal-body" id="detail-body"></div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-overlay" onclick="overlayClick(event,'edit-overlay')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-id" id="e-id"></div>
+        <div class="modal-title" id="e-name"></div>
+        <div class="modal-subtitle" style="color:#92400e;font-weight:600">✏️ 编辑模式</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('edit-overlay')">✕</button>
+    </div>
+    <div class="modal-body" id="edit-body"></div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────
+let appData = null;
+let editMode = false;
+let viewMode = 'group';
+let filters = { status: 'all', line: 'all' };
+const STORAGE_KEY = 'hiwood-roadmap-v2';
+
+// ── Init ───────────────────────────────────────────────────────
+async function init() {
+  // 1. 先用本地缓存立即渲染（快）
+  const localSaved = localStorage.getItem(STORAGE_KEY);
+  if (localSaved) {
+    try { appData = JSON.parse(localSaved); } catch(e) { appData = deepClone(DEFAULT_DATA); }
+  } else {
+    appData = deepClone(DEFAULT_DATA);
+  }
+  renderPage();
+
+  // 2. 再同步服务器数据
+  try {
+    const r = await fetch('/api/data');
+    if (r.ok) {
+      const serverData = await r.json();
+      if (serverData && serverData.products) {
+        const serverDate = serverData.lastUpdated || '2000-01-01';
+        const localDate = appData.lastUpdated || '2000-01-01';
+        if (serverDate >= localDate) {
+          // 服务器数据更新，以服务器为准
+          appData = serverData;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+          renderPage();
+        } else {
+          // 本地数据更新，推送到服务器（恢复重启后丢失的数据）
+          pushToServer();
+        }
+      } else {
+        // 服务器无数据（刚重启），用本地数据恢复
+        pushToServer();
+      }
+    }
+  } catch(e) {
+    // 本地模式（直接打开HTML文件），仅用localStorage
+  }
+}
+
+function renderPage() {
+  document.getElementById('hdr-title').textContent = appData.company + ' 产品研发进度看板';
+  document.getElementById('hdr-sub').textContent = '共 ' + appData.products.length + ' 个产品 · 最后更新 ' + appData.lastUpdated;
+  const lines = [...new Set(appData.products.map(p => p.line))];
+  const lf = document.getElementById('line-filters');
+  lf.innerHTML = '<button class="fbtn active" onclick="setFilter(\'line\',\'all\',this)">全部</button>' +
+    lines.map(l => `<button class="fbtn" onclick="setFilter('line','${esc(l)}',this)">${esc(l)}</button>`).join('');
+  renderStats();
+  renderCards();
+}
+
+function saveData() {
+  appData.lastUpdated = new Date().toISOString().slice(0,10);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+  pushToServer();
+  document.getElementById('hdr-sub').textContent = '共 ' + appData.products.length + ' 个产品 · 最后更新 ' + appData.lastUpdated;
+}
+
+function pushToServer() {
+  fetch('/api/data', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(appData)
+  }).catch(() => {});
+}
+
+function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── Edit Mode ──────────────────────────────────────────────────
+function toggleEditMode() {
+  editMode = !editMode;
+  const btn = document.getElementById('edit-toggle-btn');
+  const body = document.body;
+  if (editMode) {
+    btn.classList.add('edit-active');
+    btn.innerHTML = '✅ <span>退出编辑</span>';
+    body.classList.add('edit-mode');
+  } else {
+    btn.classList.remove('edit-active');
+    btn.innerHTML = '✏️ <span>编辑模式</span>';
+    body.classList.remove('edit-mode');
+  }
+}
+
+// ── Stats ──────────────────────────────────────────────────────
+function renderStats() {
+  const p = appData.products;
+  const counts = {};
+  ['规划中','推进中','测试中','已上线','暂停'].forEach(s => counts[s] = p.filter(x=>x.status===s).length);
+  const avg = Math.round(p.reduce((a,b)=>a+b.progress,0)/p.length);
+  const colors = {'规划中':'#0369a1','推进中':'#b45309','测试中':'#6d28d9','已上线':'#16a34a','暂停':'#9ca3af'};
+  document.getElementById('stats-area').innerHTML =
+    `<div class="stat-card"><div class="stat-num">${p.length}</div><div class="stat-label">总产品数</div></div>` +
+    ['推进中','测试中','已上线','规划中','暂停'].map(s=>
+      `<div class="stat-card"><div class="stat-num" style="color:${colors[s]}">${counts[s]}</div><div class="stat-label">${s}</div></div>`
+    ).join('') +
+    `<div class="stat-card"><div class="stat-num" style="color:var(--primary)">${avg}%</div><div class="stat-label">平均进度</div></div>`;
+}
+
+// ── Cards ──────────────────────────────────────────────────────
+function getFiltered() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  return appData.products.filter(p => {
+    if (filters.status !== 'all' && p.status !== filters.status) return false;
+    if (filters.line !== 'all' && p.line !== filters.line) return false;
+    if (q && !p.name.toLowerCase().includes(q) && !p.description.toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+function renderCards() {
+  const list = getFiltered();
+  document.getElementById('count-label').textContent = '（' + list.length + ' 个）';
+  const grid = document.getElementById('card-grid');
+  const noRes = document.getElementById('no-results');
+  if (!list.length) { grid.innerHTML = ''; noRes.style.display = 'block'; return; }
+  noRes.style.display = 'none';
+  if (viewMode === 'group') {
+    renderGrouped(list, grid);
+  } else {
+    grid.className = 'grid';
+    grid.innerHTML = list.map(cardHTML).join('');
+  }
+}
+
+function renderGrouped(list, grid) {
+  grid.className = ''; // remove grid class, groups handle their own layout
+  const lineOrder = ['Hiplant', 'Sunet', 'Ulight'];
+  const lines = [...new Set(appData.products.map(p => p.line))].sort((a,b) => {
+    const ai = lineOrder.indexOf(a), bi = lineOrder.indexOf(b);
+    return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
+  });
+  grid.innerHTML = lines.map(line => {
+    const items = list.filter(p => p.line === line);
+    if (!items.length) return '';
+    const color = items[0].lineColor;
+    const avg = Math.round(items.reduce((a,p) => a+p.progress, 0) / items.length);
+    const statusCounts = items.reduce((m,p) => { m[p.status] = (m[p.status]||0)+1; return m; }, {});
+    const statusSummary = Object.entries(statusCounts).map(([s,c]) => `${s} ${c}`).join(' · ');
+    return `
+    <div class="group-section">
+      <div class="group-header" style="background:${color};color:white">
+        <div class="group-header-dot" style="background:rgba(255,255,255,.5)"></div>
+        <div>
+          <div class="group-header-name">${esc(line)}</div>
+          <div class="group-header-meta">${items.length} 个产品 · ${esc(statusSummary)}</div>
+        </div>
+        <div class="group-header-progress">
+          <div class="group-mini-bar"><div class="group-mini-fill" style="width:${avg}%"></div></div>
+          <span class="group-mini-pct" style="color:white">${avg}%</span>
+        </div>
+      </div>
+      <div class="grid">${items.map(cardHTML).join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+function setView(mode) {
+  viewMode = mode;
+  document.getElementById('vbtn-grid').classList.toggle('active', mode === 'grid');
+  document.getElementById('vbtn-group').classList.toggle('active', mode === 'group');
+  renderCards();
+}
+
+function cardHTML(p) {
+  const done = p.milestones.filter(m=>m.status==='done').length;
+  const pc = p.progress >= 100 ? '#16a34a' : p.progress >= 60 ? '#2563eb' : p.progress >= 30 ? '#d97706' : '#9ca3af';
+  const docCount = (p.documents||[]).length;
+  return `
+  <div class="card" onclick="openDetail('${esc(p.id)}')">
+    <div class="card-line-bar" style="background:${esc(p.lineColor)}"></div>
+    <div class="card-header">
+      <span class="card-id">${esc(p.id)}</span>
+      <div class="card-actions">
+        <button class="edit-card-btn" onclick="event.stopPropagation();openEdit('${esc(p.id)}')">✏️ 编辑</button>
+        <span class="badge status-${esc(p.status)}"><span class="badge-dot status-dot-${esc(p.status)}"></span>${esc(p.status)}</span>
+      </div>
+    </div>
+    <div class="card-name">${esc(p.name)}</div>
+    <div class="card-line">📁 ${esc(p.line)}</div>
+    <div class="card-desc">${esc(p.description)}</div>
+    <div class="progress-wrap">
+      <div class="progress-header">
+        <span class="progress-text">里程碑 ${done}/${p.milestones.length}</span>
+        <span class="progress-pct" style="color:${pc}">${p.progress}%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${p.progress}%;background:${pc}"></div></div>
+    </div>
+    <div class="card-footer">
+      <div class="card-owner"><div class="avatar" style="background:${esc(p.ownerBg)}">${esc(p.owner[0])}</div>${esc(p.owner)}</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${docCount ? `<span class="doc-count">📎 ${docCount} 个文档</span>` : ''}
+        <span class="card-dates">目标 ${esc(p.targetDate)}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Detail Modal ───────────────────────────────────────────────
+function openDetail(id) {
+  const p = appData.products.find(x=>x.id===id);
+  document.getElementById('d-id').textContent = p.id;
+  document.getElementById('d-name').textContent = p.name;
+  document.getElementById('d-subtitle').innerHTML =
+    `<span class="badge status-${esc(p.status)}"><span class="badge-dot status-dot-${esc(p.status)}"></span>${esc(p.status)}</span>
+     ${esc(p.line)} · 负责人：${esc(p.owner)}`;
+  const pc = p.progress >= 100 ? '#16a34a' : p.progress >= 60 ? '#2563eb' : p.progress >= 30 ? '#d97706' : '#9ca3af';
+  const docs = p.documents || [];
+
+  document.getElementById('detail-body').innerHTML = `
+    <div class="modal-section">
+      <div class="modal-section-title">产品目标</div>
+      <div class="goal-box">${esc(p.goal)}</div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">基本信息</div>
+      <div class="info-grid">
+        <div class="info-item"><div class="label">产品线</div><div class="value">${esc(p.line)}</div></div>
+        <div class="info-item"><div class="label">负责人</div><div class="value">${esc(p.owner)}</div></div>
+        <div class="info-item"><div class="label">启动日期</div><div class="value">${esc(p.startDate)}</div></div>
+        <div class="info-item"><div class="label">目标上线日期</div><div class="value">${esc(p.targetDate)}</div></div>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">整体进度</div>
+      <div class="big-progress-bar"><div class="big-progress-fill" style="width:${p.progress}%;background:${pc}"></div></div>
+      <div class="big-progress-pct" style="color:${pc}">${p.progress}%</div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">
+        文档附件
+        ${editMode ? `<button class="btn btn-sm btn-primary" onclick="openEdit('${esc(id)}')">✏️ 管理文档</button>` : ''}
+      </div>
+      <div class="doc-list">
+        ${docs.length === 0
+          ? `<div class="no-docs">${editMode ? '点击右上角「管理文档」添加飞书文档链接' : '暂无文档，开启编辑模式可添加'}</div>`
+          : docs.map(d => `
+            <div class="doc-item">
+              <div class="doc-icon">${docIcon(d.type)}</div>
+              <div class="doc-info">
+                <div class="doc-name">${esc(d.name)}</div>
+                <div class="doc-meta">${esc(d.type)} · ${esc(d.addedBy)} · ${esc(d.addedDate)}</div>
+              </div>
+              <div class="doc-actions">
+                <a class="doc-open-btn" href="${esc(d.url)}" target="_blank" rel="noopener">打开</a>
+              </div>
+            </div>`).join('')}
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">里程碑计划</div>
+      <div class="timeline">
+        ${p.milestones.map(m=>`
+        <div class="tl-item">
+          <div class="tl-dot ${esc(m.status)}"></div>
+          <div class="tl-name">${esc(m.name)}</div>
+          <div class="tl-date">${esc(m.date)}</div>
+          ${m.note ? `<div class="tl-note">${esc(m.note)}</div>` : ''}
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">最新进展</div>
+      ${p.updates.map(u=>`
+      <div class="update-item">
+        <div class="update-meta"><span>${esc(u.author)}</span><span>${esc(u.date)}</span></div>
+        <div class="update-content">${esc(u.content)}</div>
+      </div>`).join('')}
+    </div>
+  `;
+  openModal('detail-overlay');
+}
+
+function docIcon(type) {
+  const m = {'飞书文档':'📄','飞书表格':'📊','飞书多维表格':'🗂️','飞书幻灯片':'📑','PDF':'📕','图片':'🖼️','视频':'🎬'};
+  return m[type] || '📎';
+}
+
+// ── Edit Modal ─────────────────────────────────────────────────
+function openEdit(id) {
+  const p = appData.products.find(x=>x.id===id);
+  document.getElementById('e-id').textContent = p.id;
+  document.getElementById('e-name').textContent = p.name;
+
+  const docs = p.documents || [];
+  const today = new Date().toISOString().slice(0,10);
+
+  document.getElementById('edit-body').innerHTML = `
+    <!-- 状态 & 进度 -->
+    <div class="edit-section">
+      <div class="edit-section-title">📊 状态与进度</div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>当前状态</label>
+          <select class="status-select" id="e-status" onchange="previewSave()">
+            ${['规划中','推进中','测试中','已上线','暂停'].map(s=>`<option value="${s}" ${p.status===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-field">
+          <label>整体进度</label>
+          <div class="range-wrap">
+            <input type="range" min="0" max="100" value="${p.progress}" id="e-progress"
+              oninput="document.getElementById('e-pct').textContent=this.value+'%'">
+            <span class="range-val" id="e-pct">${p.progress}%</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="saveBasic('${esc(id)}')">保存状态/进度</button>
+    </div>
+
+    <!-- 添加进展 -->
+    <div class="edit-section">
+      <div class="edit-section-title">📝 添加最新进展</div>
+      <div class="form-row">
+        <div class="form-field"><label>作者</label><input type="text" id="e-author" placeholder="你的名字"></div>
+        <div class="form-field"><label>日期</label><input type="date" id="e-date" value="${today}"></div>
+      </div>
+      <div class="form-field" style="margin-bottom:8px">
+        <label>进展内容</label>
+        <textarea id="e-content" placeholder="描述本次进展、遇到的问题或下一步计划…"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="addUpdate('${esc(id)}')">添加进展</button>
+    </div>
+
+    <!-- 里程碑 -->
+    <div class="edit-section">
+      <div class="edit-section-title">🏁 里程碑</div>
+      <div class="milestone-edit-list" id="e-milestones">
+        ${p.milestones.length === 0
+          ? '<div style="font-size:13px;color:var(--text-muted);padding:4px 0">暂无里程碑，在下方添加</div>'
+          : p.milestones.map((m,i) => milestoneRowHTML(id, m, i)).join('')}
+      </div>
+      <div style="margin-top:12px;border-top:1px dashed var(--border);padding-top:12px">
+        <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px">添加里程碑</div>
+        <div class="form-row">
+          <div class="form-field" style="flex:2">
+            <label>名称</label>
+            <input type="text" id="m-new-name" placeholder="如：完成打样">
+          </div>
+          <div class="form-field" style="flex:1">
+            <label>计划日期</label>
+            <input type="date" id="m-new-date">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="addMilestone('${esc(id)}')">添加</button>
+      </div>
+    </div>
+
+    <!-- 文档附件 -->
+    <div class="edit-section edit-mode-modal">
+      <div class="edit-section-title">📎 飞书文档 / 云盘链接</div>
+      <div class="doc-list" id="e-doc-list">
+        ${docs.length === 0
+          ? '<div class="no-docs" id="no-docs-hint">还没有文档，在下方添加飞书链接</div>'
+          : docs.map((d,i)=>`
+          <div class="doc-item" id="doc-item-${i}">
+            <div class="doc-icon">${docIcon(d.type)}</div>
+            <div class="doc-info">
+              <div class="doc-name">${esc(d.name)}</div>
+              <div class="doc-meta">${esc(d.type)} · ${esc(d.addedBy)} · ${esc(d.addedDate)}</div>
+            </div>
+            <div class="doc-actions">
+              <a class="doc-open-btn" href="${esc(d.url)}" target="_blank" rel="noopener">打开</a>
+              <button class="doc-del-btn" style="display:inline-block" onclick="deleteDoc('${esc(id)}',${i})">删除</button>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div class="add-doc-form" style="display:block;margin-top:12px">
+        <div class="form-row">
+          <div class="form-field" style="flex:2;min-width:180px">
+            <label>文档名称</label>
+            <input type="text" id="doc-name" placeholder="如：产品规划文档 v1.0">
+          </div>
+          <div class="form-field" style="flex:1;min-width:120px">
+            <label>文档类型</label>
+            <select id="doc-type">
+              <option>飞书文档</option><option>飞书表格</option><option>飞书多维表格</option>
+              <option>飞书幻灯片</option><option>PDF</option><option>图片</option><option>其他</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field" style="flex:1">
+            <label>飞书链接（粘贴分享链接）</label>
+            <input type="url" id="doc-url" placeholder="https://xxx.feishu.cn/...">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>添加人</label>
+            <input type="text" id="doc-addedby" placeholder="你的名字">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="addDoc('${esc(id)}')">添加文档</button>
+      </div>
+    </div>
+
+    <!-- 删除产品 -->
+    <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+      <button class="btn btn-danger" style="width:100%" onclick="deleteProduct('${esc(id)}')">🗑️ 删除此产品</button>
+    </div>
+  `;
+  openModal('edit-overlay');
+}
+
+function saveBasic(id) {
+  const p = appData.products.find(x=>x.id===id);
+  p.status = document.getElementById('e-status').value;
+  p.progress = parseInt(document.getElementById('e-progress').value);
+  saveData(); renderCards(); renderStats();
+  flash('状态和进度已保存');
+}
+
+function addUpdate(id) {
+  const author = document.getElementById('e-author').value.trim();
+  const date = document.getElementById('e-date').value;
+  const content = document.getElementById('e-content').value.trim();
+  if (!author || !content) { alert('请填写作者和进展内容'); return; }
+  const p = appData.products.find(x=>x.id===id);
+  p.updates.unshift({ date, author, content });
+  saveData(); renderCards();
+  document.getElementById('e-content').value = '';
+  document.getElementById('e-author').value = '';
+  flash('进展已添加');
+}
+
+function milestoneRowHTML(id, m, i) {
+  return `<div class="milestone-edit-item" id="m-row-${i}">
+    <span class="m-name">${esc(m.name)}<br><span style="font-size:11px;color:var(--text-muted)">${esc(m.date)}</span></span>
+    <select onchange="saveMilestone('${esc(id)}',${i},this.value)">
+      <option value="upcoming" ${m.status==='upcoming'?'selected':''}>待开始</option>
+      <option value="current" ${m.status==='current'?'selected':''}>进行中</option>
+      <option value="done" ${m.status==='done'?'selected':''}>已完成</option>
+    </select>
+    <button class="btn btn-danger btn-sm" style="padding:3px 8px;font-size:11px" onclick="deleteMilestone('${esc(id)}',${i})">删除</button>
+  </div>`;
+}
+
+function saveMilestone(id, idx, val) {
+  const p = appData.products.find(x=>x.id===id);
+  p.milestones[idx].status = val;
+  saveData(); renderCards();
+}
+
+function addMilestone(id) {
+  const name = document.getElementById('m-new-name').value.trim();
+  const date = document.getElementById('m-new-date').value;
+  if (!name) { alert('请填写里程碑名称'); return; }
+  const p = appData.products.find(x=>x.id===id);
+  p.milestones.push({ name, date: date || '', status: 'upcoming', note: '' });
+  saveData(); renderCards();
+  const list = document.getElementById('e-milestones');
+  const i = p.milestones.length - 1;
+  list.insertAdjacentHTML('beforeend', milestoneRowHTML(id, p.milestones[i], i));
+  document.getElementById('m-new-name').value = '';
+  document.getElementById('m-new-date').value = '';
+  flash('里程碑已添加');
+}
+
+function deleteMilestone(id, idx) {
+  if (!confirm('确定删除该里程碑？')) return;
+  const p = appData.products.find(x=>x.id===id);
+  p.milestones.splice(idx, 1);
+  saveData(); renderCards();
+  const row = document.getElementById('m-row-' + idx);
+  if (row) row.remove();
+  flash('已删除');
+}
+
+function addDoc(id) {
+  const name = document.getElementById('doc-name').value.trim();
+  const url = document.getElementById('doc-url').value.trim();
+  const type = document.getElementById('doc-type').value;
+  const addedBy = document.getElementById('doc-addedby').value.trim();
+  if (!name || !url) { alert('请填写文档名称和链接'); return; }
+  if (!url.startsWith('http')) { alert('链接格式不正确，请粘贴完整的飞书分享链接'); return; }
+  const p = appData.products.find(x=>x.id===id);
+  if (!p.documents) p.documents = [];
+  const today = new Date().toISOString().slice(0,10);
+  p.documents.push({ name, url, type, addedBy: addedBy || '匿名', addedDate: today });
+  saveData(); renderCards();
+  // refresh doc list
+  const list = document.getElementById('e-doc-list');
+  if (list) {
+    const hint = document.getElementById('no-docs-hint');
+    if (hint) hint.remove();
+    const i = p.documents.length - 1;
+    const d = p.documents[i];
+    list.insertAdjacentHTML('beforeend', `
+      <div class="doc-item" id="doc-item-${i}">
+        <div class="doc-icon">${docIcon(d.type)}</div>
+        <div class="doc-info">
+          <div class="doc-name">${esc(d.name)}</div>
+          <div class="doc-meta">${esc(d.type)} · ${esc(d.addedBy)} · ${esc(d.addedDate)}</div>
+        </div>
+        <div class="doc-actions">
+          <a class="doc-open-btn" href="${esc(d.url)}" target="_blank" rel="noopener">打开</a>
+          <button class="doc-del-btn" style="display:inline-block" onclick="deleteDoc('${esc(id)}',${i})">删除</button>
+        </div>
+      </div>`);
+  }
+  document.getElementById('doc-name').value = '';
+  document.getElementById('doc-url').value = '';
+  flash('文档已添加');
+}
+
+function deleteProduct(id) {
+  const p = appData.products.find(x=>x.id===id);
+  if (!confirm(`确定删除「${p.name}」？此操作不可恢复。`)) return;
+  appData.products = appData.products.filter(x=>x.id!==id);
+  saveData(); renderCards(); renderStats();
+  closeModal('edit-overlay');
+  flash('产品已删除');
+}
+
+function deleteDoc(id, idx) {
+  if (!confirm('确定删除该文档链接？')) return;
+  const p = appData.products.find(x=>x.id===id);
+  p.documents.splice(idx, 1);
+  saveData(); renderCards();
+  const item = document.getElementById('doc-item-' + idx);
+  if (item) item.remove();
+  flash('已删除');
+}
+
+// ── Export ─────────────────────────────────────────────────────
+function exportData() {
+  const blob = new Blob([JSON.stringify(appData, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'roadmap-' + appData.lastUpdated + '.json';
+  a.click();
+}
+
+// ── Create Product ─────────────────────────────────────────────
+let createMilestones = [];
+
+function openCreate() {
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('c-start').value = today;
+  document.getElementById('c-name').value = '';
+  document.getElementById('c-owner').value = '';
+  document.getElementById('c-desc').value = '';
+  document.getElementById('c-goal').value = '';
+  document.getElementById('c-m-name').value = '';
+  document.getElementById('c-m-date').value = '';
+  createMilestones = [];
+  document.getElementById('c-milestone-list').innerHTML = '';
+  openModal('create-overlay');
+  setTimeout(() => document.getElementById('c-name').focus(), 100);
+}
+
+function addCreateMilestone() {
+  const name = document.getElementById('c-m-name').value.trim();
+  const date = document.getElementById('c-m-date').value;
+  if (!name) { alert('请填写里程碑名称'); return; }
+  const idx = createMilestones.length;
+  createMilestones.push({ name, date: date || '', status: 'upcoming', note: '' });
+  const list = document.getElementById('c-milestone-list');
+  list.insertAdjacentHTML('beforeend', `
+    <div class="milestone-edit-item" id="cm-row-${idx}">
+      <span class="m-name">${esc(name)}<br><span style="font-size:11px;color:var(--text-muted)">${esc(date || '待定')}</span></span>
+      <button class="btn btn-danger btn-sm" style="padding:3px 8px;font-size:11px;margin-left:auto" onclick="removeCreateMilestone(${idx})">删除</button>
+    </div>`);
+  document.getElementById('c-m-name').value = '';
+  document.getElementById('c-m-date').value = '';
+  document.getElementById('c-m-name').focus();
+}
+
+function removeCreateMilestone(idx) {
+  createMilestones[idx] = null;
+  const row = document.getElementById('cm-row-' + idx);
+  if (row) row.remove();
+}
+
+function createProduct() {
+  const name = document.getElementById('c-name').value.trim();
+  const owner = document.getElementById('c-owner').value.trim();
+  const desc = document.getElementById('c-desc').value.trim();
+  if (!name || !owner || !desc) { alert('请填写产品名称、负责人和描述'); return; }
+
+  const line = document.getElementById('c-line').value;
+  const lineColors = { Hiplant: '#16a34a', Sunet: '#ea580c', Ulight: '#7c3aed' };
+  const ownerColors = ['#2563eb','#d97706','#7c3aed','#0891b2','#be185d','#16a34a'];
+  const existingCount = appData.products.length;
+  const newId = 'P' + String(existingCount + 1).padStart(3, '0');
+
+  const newProduct = {
+    id: newId,
+    name,
+    line,
+    lineColor: lineColors[line] || '#6b7280',
+    owner,
+    ownerBg: ownerColors[existingCount % ownerColors.length],
+    status: document.getElementById('c-status').value,
+    progress: 0,
+    startDate: document.getElementById('c-start').value || new Date().toISOString().slice(0,10),
+    targetDate: document.getElementById('c-target').value || '',
+    description: desc,
+    goal: document.getElementById('c-goal').value.trim() || desc,
+    milestones: createMilestones.filter(Boolean),
+    updates: [],
+    documents: []
+  };
+
+  appData.products.push(newProduct);
+  saveData();
+  renderCards();
+  renderStats();
+  closeModal('create-overlay');
+  flash('产品「' + name + '」已创建');
+  // update line filters
+  const lines = [...new Set(appData.products.map(p => p.line))];
+  const lf = document.getElementById('line-filters');
+  lf.innerHTML = '<button class="fbtn active" onclick="setFilter(\'line\',\'all\',this)">全部</button>' +
+    lines.map(l => `<button class="fbtn" onclick="setFilter('line','${esc(l)}',this)">${esc(l)}</button>`).join('');
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function overlayClick(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
+function setFilter(key, val, btn) {
+  filters[key] = val;
+  const container = key === 'line' ? document.getElementById('line-filters') : btn.parentElement;
+  container.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards();
+}
+function flash(msg) {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:white;padding:8px 20px;border-radius:8px;font-size:13px;z-index:9999;opacity:1;transition:opacity .4s';
+  el.textContent = '✓ ' + msg;
+  document.body.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 1800);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
