@@ -228,8 +228,14 @@
   .range-wrap input[type=range] { flex: 1; }
   .range-val { font-size: 15px; font-weight: 700; color: var(--primary); min-width: 40px; }
   .milestone-edit-list { display: flex; flex-direction: column; gap: 6px; }
-  .milestone-edit-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: white; border-radius: 6px; border: 1px solid var(--border); }
-  .milestone-edit-item .m-name { flex: 1; font-size: 13px; }
+  .milestone-edit-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: white; border-radius: 6px; border: 1px solid var(--border); transition: border-color .15s, background .15s; }
+  .milestone-edit-item.drag-over { border-color: #2563eb; background: #eff6ff; }
+  .ms-drag-handle { cursor: grab; color: #cbd5e1; font-size: 16px; flex-shrink: 0; line-height: 1; user-select: none; }
+  .ms-drag-handle:active { cursor: grabbing; }
+  .ms-name-input { flex: 1; border: 1px solid transparent; border-radius: 5px; padding: 3px 6px; font-size: 13px; background: transparent; outline: none; font-family: inherit; min-width: 0; }
+  .ms-name-input:hover, .ms-name-input:focus { border-color: var(--border); background: #f8fafc; }
+  .ms-date-input { border: 1px solid transparent; border-radius: 5px; padding: 3px 5px; font-size: 12px; background: transparent; outline: none; color: var(--text-muted); font-family: inherit; }
+  .ms-date-input:hover, .ms-date-input:focus { border-color: var(--border); background: #f8fafc; }
   .milestone-edit-item select { padding: 3px 6px; border: 1px solid var(--border); border-radius: 5px; font-size: 12px; }
   .status-select { padding: 6px 10px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; background: white; }
 
@@ -1663,20 +1669,13 @@ function openEdit(id) {
           ? '<div style="font-size:13px;color:var(--text-muted);padding:4px 0">暂无里程碑，在下方添加</div>'
           : p.milestones.map((m,i) => milestoneRowHTML(id, m, i)).join('')}
       </div>
-      <div style="margin-top:12px;border-top:1px dashed var(--border);padding-top:12px">
-        <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px">添加里程碑</div>
-        <div class="form-row">
-          <div class="form-field" style="flex:2">
-            <label>名称</label>
-            <input type="text" id="m-new-name" placeholder="如：完成打样">
-          </div>
-          <div class="form-field" style="flex:1">
-            <label>计划日期</label>
-            <input type="date" id="m-new-date">
-          </div>
-        </div>
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+        <input type="text" id="m-new-name" placeholder="里程碑名称，回车添加"
+          style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;font-family:inherit"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();addMilestone('${esc(id)}')}">
         <button class="btn btn-primary btn-sm" onclick="addMilestone('${esc(id)}')">添加</button>
       </div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:5px">添加后可直接在行内修改名称、日期，拖动左侧 ⠿ 调整顺序</div>
     </div>
 
     <!-- 下一步行动 -->
@@ -1916,14 +1915,22 @@ function addWeeklyLog(id) {
 }
 
 function milestoneRowHTML(id, m, i) {
-  return `<div class="milestone-edit-item" id="m-row-${i}">
-    <span class="m-name">${esc(m.name)}<br><span style="font-size:11px;color:var(--text-muted)">${esc(m.date)}</span></span>
+  return `<div class="milestone-edit-item" id="m-row-${i}" draggable="true"
+    ondragstart="msDragStart(event,'${esc(id)}',${i})"
+    ondragover="msDragOver(event)"
+    ondragleave="msDragLeave(event)"
+    ondrop="msDrop(event,'${esc(id)}',${i})">
+    <span class="ms-drag-handle">⠿</span>
+    <input class="ms-name-input" value="${esc(m.name)}" placeholder="里程碑名称"
+      onblur="saveMsField('${esc(id)}',${i},'name',this.value)">
+    <input type="date" class="ms-date-input" value="${esc(m.date)}"
+      onchange="saveMsField('${esc(id)}',${i},'date',this.value)">
     <select onchange="saveMilestone('${esc(id)}',${i},this.value)">
       <option value="upcoming" ${m.status==='upcoming'?'selected':''}>待开始</option>
       <option value="current" ${m.status==='current'?'selected':''}>进行中</option>
       <option value="done" ${m.status==='done'?'selected':''}>已完成</option>
     </select>
-    <button class="btn btn-danger btn-sm" style="padding:3px 8px;font-size:11px" onclick="deleteMilestone('${esc(id)}',${i})">删除</button>
+    <button class="btn btn-danger btn-sm" style="padding:3px 8px;font-size:11px" onclick="deleteMilestone('${esc(id)}',${i})">删</button>
   </div>`;
 }
 
@@ -1933,18 +1940,50 @@ function saveMilestone(id, idx, val) {
   saveData(); renderCards();
 }
 
+function saveMsField(id, idx, field, val) {
+  const p = appData.products.find(x=>x.id===id);
+  if (!p || !p.milestones[idx]) return;
+  p.milestones[idx][field] = val;
+  saveData(); renderCards(); renderProductMilestones();
+}
+
+let msDragSrc = null;
+function msDragStart(e, id, i) {
+  msDragSrc = i;
+  e.dataTransfer.effectAllowed = 'move';
+}
+function msDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+}
+function msDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+function msDrop(e, id, i) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (msDragSrc === null || msDragSrc === i) return;
+  const p = appData.products.find(x=>x.id===id);
+  const moved = p.milestones.splice(msDragSrc, 1)[0];
+  p.milestones.splice(i, 0, moved);
+  msDragSrc = null;
+  saveData(); renderCards(); renderProductMilestones();
+  document.getElementById('e-milestones').innerHTML =
+    p.milestones.map((m, idx) => milestoneRowHTML(id, m, idx)).join('');
+}
+
 function addMilestone(id) {
   const name = document.getElementById('m-new-name').value.trim();
-  const date = document.getElementById('m-new-date').value;
   if (!name) { alert('请填写里程碑名称'); return; }
   const p = appData.products.find(x=>x.id===id);
-  p.milestones.push({ name, date: date || '', status: 'upcoming', note: '' });
+  p.milestones.push({ name, date: '', status: 'upcoming', note: '' });
   saveData(); renderCards();
   const list = document.getElementById('e-milestones');
   const i = p.milestones.length - 1;
+  if (i === 0) list.innerHTML = '';
   list.insertAdjacentHTML('beforeend', milestoneRowHTML(id, p.milestones[i], i));
   document.getElementById('m-new-name').value = '';
-  document.getElementById('m-new-date').value = '';
   flash('里程碑已添加');
 }
 
