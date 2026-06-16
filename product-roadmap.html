@@ -399,8 +399,7 @@
   .pm-ms-date { font-size:10px; color:#94a3b8; margin-top:2px; text-align:center; }
   .pm-ms-item.overdue .pm-ms-date { color:#ef4444; font-weight:600; }
   .pm-divider { border:none; border-top:1px solid #f1f5f9; margin:0 0 14px; }
-  .pm-weekly { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-  @media(max-width:640px){ .pm-weekly { grid-template-columns:1fr; } }
+  .pm-weekly { display:flex; flex-direction:column; gap:12px; }
   .pm-weekly-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; margin-bottom:5px; }
   .pm-weekly-done .pm-weekly-label { color:#16a34a; }
   .pm-weekly-next .pm-weekly-label { color:#2563eb; }
@@ -965,13 +964,13 @@ function renderProductMilestones() {
       const weeklyHTML = latest
         ? `<hr class="pm-divider">
            <div class="pm-weekly">
-             <div class="pm-weekly-done">
-               <div class="pm-weekly-label">会议纪要</div>
-               <div class="pm-weekly-text">${esc(latest.completed||'—')}</div>
-             </div>
              <div class="pm-weekly-next">
                <div class="pm-weekly-label">本周计划</div>
                ${planItemsHTML(latest.nextPlan, p.id, latest.id, false)}
+             </div>
+             <div class="pm-weekly-done">
+               <div class="pm-weekly-label">会议纪要</div>
+               <div class="pm-weekly-text">${esc(latest.completed||'—')}</div>
              </div>
            </div>
            <div class="pm-weekly-meta">${esc(latest.meetingDate)} 周会${latest.author?' · '+esc(latest.author):''}</div>`
