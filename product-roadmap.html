@@ -296,6 +296,17 @@
   /* CARD STAGE */
   .card-stage { font-size: 11px; color: #92400e; background: #fffbeb; padding: 2px 8px; border-radius: 8px; margin-top: 4px; display: inline-block; }
 
+  /* CARD MILESTONE MINI */
+  .card-ms { margin: 12px 0 4px; }
+  .card-ms-track { display: flex; align-items: center; margin-bottom: 6px; }
+  .card-ms-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; border: 2px solid #d1d5db; background: white; position: relative; z-index: 1; }
+  .card-ms-dot.done { background: #16a34a; border-color: #16a34a; }
+  .card-ms-dot.current { background: #f59e0b; border-color: #f59e0b; box-shadow: 0 0 0 3px #fde68a; }
+  .card-ms-dot.overdue { background: #fef2f2; border-color: #ef4444; }
+  .card-ms-line { flex: 1; height: 2px; background: #e5e7eb; margin: 0 2px; }
+  .card-ms-line.done { background: #16a34a; }
+  .card-ms-cur-label { font-size: 11px; color: #92400e; background: #fef9ec; padding: 2px 8px; border-radius: 6px; display: inline-block; }
+
   /* DETAIL PAGE LAYOUT */
   .dp-layout { display: flex; align-items: flex-start; }
   .dp-main { flex: 1; min-width: 0; padding: 28px 28px 80px; }
@@ -1098,8 +1109,15 @@ function renderTeamPanels(list, grid) {
     const hasMore = items.length > PREVIEW_LIMIT;
     const rows = preview.map(p => {
       const pc = p.progress >= 100 ? '#16a34a' : p.progress >= 60 ? '#2563eb' : p.progress >= 30 ? '#d97706' : '#9ca3af';
+      const todayTp = new Date(); todayTp.setHours(0,0,0,0);
+      const curMtp = p.milestones.find(m=>m.status==='current') || p.milestones.find(m=>m.status==='upcoming');
+      const overdueCountTp = p.milestones.filter(m=>m.status!=='done'&&m.date&&new Date(m.date)<todayTp).length;
       return `<div class="tp-row" onclick="openDetailPage('${esc(p.id)}')">
-        <div class="tp-name">${esc(p.name)}</div>
+        <div class="tp-name">
+          ${esc(p.name)}
+          ${curMtp?`<div style="font-size:10px;color:#94a3b8;margin-top:2px;font-weight:400">${esc(curMtp.name)}</div>`:''}
+          ${overdueCountTp?`<div style="font-size:10px;color:#dc2626;font-weight:600;margin-top:1px">⚠ ${overdueCountTp} 项逾期</div>`:''}
+        </div>
         <div class="tp-right">
           <span class="badge status-${esc(p.status)}" style="font-size:10px;padding:2px 7px">
             <span class="badge-dot status-dot-${esc(p.status)}"></span>${esc(p.status)}
@@ -1281,11 +1299,27 @@ function cardHTML(p) {
   const done = p.milestones.filter(m=>m.status==='done').length;
   const pc = p.progress >= 100 ? '#16a34a' : p.progress >= 60 ? '#2563eb' : p.progress >= 30 ? '#d97706' : '#9ca3af';
   const docCount = (p.documents||[]).length;
+  const todayCard = new Date(); todayCard.setHours(0,0,0,0);
   const currentM = p.milestones.find(m => m.status === 'current')
     || p.milestones.find(m => m.status === 'upcoming');
-  const stageHTML = currentM
-    ? `<div class="card-stage">${esc(currentM.name)}</div>`
-    : '';
+
+  // mini milestone track
+  let msMini = '';
+  if (p.milestones.length > 0) {
+    const dots = p.milestones.map((m, i) => {
+      const overdue = m.status !== 'done' && m.date && new Date(m.date) < todayCard;
+      const cls = overdue ? 'overdue' : m.status;
+      const line = i < p.milestones.length - 1
+        ? `<div class="card-ms-line ${m.status==='done'?'done':''}"></div>` : '';
+      return `<div class="card-ms-dot ${cls}" title="${esc(m.name)} · ${esc(m.date)}"></div>${line}`;
+    }).join('');
+    const curLabel = currentM ? `<div class="card-ms-cur-label">${esc(currentM.name)}</div>` : '';
+    msMini = `<div class="card-ms">
+      <div class="card-ms-track">${dots}</div>
+      ${curLabel}
+    </div>`;
+  }
+  const stageHTML = msMini;
   return `
   <div class="card" onclick="openDetailPage('${esc(p.id)}')">
     ${p.coverImage
