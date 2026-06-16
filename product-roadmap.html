@@ -1683,42 +1683,6 @@ function openEdit(id) {
       <div style="font-size:11px;color:#94a3b8;margin-top:5px">添加后可直接在行内修改名称、日期，拖动左侧 ⠿ 调整顺序</div>
     </div>
 
-    <!-- 下一步行动 -->
-    <div class="edit-section">
-      <div class="edit-section-title">✅ 下一步行动</div>
-      <div id="e-ns-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">
-        ${(p.nextSteps||[]).length === 0
-          ? '<div style="font-size:13px;color:var(--text-muted)">暂无行动项</div>'
-          : (p.nextSteps||[]).map((s,i) => `
-          <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:white;border-radius:8px;border:1px solid var(--border)">
-            <span style="font-size:12px;font-weight:600;color:${s.done?'var(--success)':'var(--text-muted)'}">${s.done?'✓':'○'}</span>
-            <span style="flex:1;font-size:13px;${s.done?'text-decoration:line-through;color:var(--text-muted)':''}">${esc(s.text)}</span>
-            ${s.assignee?`<span style="font-size:11px;color:var(--text-muted)">@${esc(s.assignee)}</span>`:''}
-            ${s.dueDate?`<span style="font-size:11px;color:var(--text-muted)">${esc(s.dueDate)}</span>`:''}
-            <button class="btn btn-sm" style="padding:2px 8px;font-size:11px;color:${s.done?'var(--text-muted)':'var(--success)'};border-color:${s.done?'var(--border)':'#bbf7d0'};background:${s.done?'white':'#f0fdf4'}" onclick="toggleNextStep('${esc(id)}','${esc(s.id)}');openEdit('${esc(id)}')">${s.done?'撤销':'完成'}</button>
-            <button class="btn btn-danger btn-sm" style="padding:2px 8px;font-size:11px" onclick="deleteNextStep('${esc(id)}','${esc(s.id)}');openEdit('${esc(id)}')">删除</button>
-          </div>`).join('')}
-      </div>
-      <div style="border-top:1px dashed var(--border);padding-top:12px">
-        <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px">添加行动项</div>
-        <div class="form-field" style="margin-bottom:8px">
-          <label>行动内容</label>
-          <input type="text" id="ns-text" placeholder="如：完成打样确认">
-        </div>
-        <div class="form-row">
-          <div class="form-field">
-            <label>负责人</label>
-            <input type="text" id="ns-assignee" placeholder="姓名（可选）">
-          </div>
-          <div class="form-field">
-            <label>截止日期</label>
-            <input type="date" id="ns-due">
-          </div>
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="addNextStep('${esc(id)}')">添加</button>
-      </div>
-    </div>
-
     <!-- 文档附件 -->
     <div class="edit-section edit-mode-modal">
       <div class="edit-section-title">📎 飞书文档 / 云盘链接</div>
