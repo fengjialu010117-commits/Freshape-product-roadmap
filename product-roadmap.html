@@ -1526,7 +1526,7 @@ function openDetail(id) {
       </div>
       <div class="doc-list">
         ${docs.length === 0
-          ? `<div class="no-docs">${editMode ? '点击右上角「管理文档」添加飞书文档链接' : '暂无文档，开启编辑模式可添加'}</div>`
+          ? `<div class="no-docs">暂无文档，点击右上角「编辑」添加飞书文档链接</div>`
           : docs.map(d => `
             <div class="doc-item">
               <div class="doc-icon">${docIcon(d.type)}</div>
@@ -2211,7 +2211,7 @@ function renderDetailPage(id) {
     <div class="detail-nav">
       <button class="back-btn" onclick="closeDetailPage()">← 返回看板</button>
       <span style="font-size:12px;color:var(--text-muted);font-family:monospace">${esc(p.id)}</span>
-      ${editMode ? `<button class="hbtn" style="margin-left:auto" onclick="openEdit('${esc(id)}')">编辑</button>` : ''}
+      <button class="hbtn" style="margin-left:auto" onclick="openEdit('${esc(id)}')">编辑</button>
     </div>
 
     <div class="dp-layout">
