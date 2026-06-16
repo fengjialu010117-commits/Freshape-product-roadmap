@@ -8,10 +8,6 @@ app.use(express.static(__dirname));
 
 const DATA_FILE = '/tmp/roadmap.json';
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'product-roadmap.html'));
-});
-
 app.get('/api/data', (req, res) => {
   if (fs.existsSync(DATA_FILE)) {
     res.json(JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')));
