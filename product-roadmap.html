@@ -39,11 +39,30 @@
   .search-box { margin-left: auto; display: flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; background: var(--gray-light); }
   .search-box input { border: none; background: transparent; font-size: 13px; outline: none; width: 160px; }
 
-  /* STATS */
-  .stats { padding: 20px 28px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
-  .stat-card { background: white; border-radius: 10px; padding: 16px; border: 1px solid var(--border); }
-  .stat-num { font-size: 28px; font-weight: 700; line-height: 1; }
-  .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+  /* STATS BAR */
+  .stats { background: white; border-bottom: 1px solid var(--border); padding: 0 28px; }
+  .stats-bar { display: flex; align-items: stretch; }
+  .stat-bar-item { flex: 1; padding: 18px 0; text-align: center; }
+  .stat-bar-divider { width: 1px; background: var(--border); margin: 12px 0; flex-shrink: 0; }
+  .stat-bar-num { font-size: 28px; font-weight: 800; line-height: 1; }
+  .stat-bar-label { font-size: 11px; color: var(--text-muted); margin-top: 5px; font-weight: 500; }
+
+  /* TEAM PANELS */
+  .team-panels { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .team-panel { background: white; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+  .team-panel-header { padding: 16px 18px; color: white; display: flex; align-items: center; gap: 12px; }
+  .team-avatar-lg { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,.2); border: 2px solid rgba(255,255,255,.4); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0; }
+  .team-panel-name { font-size: 15px; font-weight: 700; }
+  .team-panel-meta { font-size: 12px; opacity: .8; margin-top: 2px; }
+  .team-panel-body { padding: 4px 0; }
+  .tp-row { display: flex; align-items: center; padding: 10px 16px; gap: 10px; cursor: pointer; transition: background .12s; border-bottom: 1px solid #f3f4f6; }
+  .tp-row:last-child { border-bottom: none; }
+  .tp-row:hover { background: #f9fafb; }
+  .tp-name { flex: 1; font-size: 13px; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tp-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .tp-prog { width: 54px; height: 5px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
+  .tp-prog-fill { height: 100%; border-radius: 3px; }
+  .tp-pct { font-size: 11px; font-weight: 600; min-width: 28px; text-align: right; }
 
   /* MAIN */
   .main { padding: 20px 28px; }
@@ -812,16 +831,38 @@ function toggleEditMode() {
 // ── Stats ──────────────────────────────────────────────────────
 function renderStats() {
   const p = appData.products;
-  const counts = {};
-  ['规划中','推进中','测试中','已上线','暂停'].forEach(s => counts[s] = p.filter(x=>x.status===s).length);
-  const avg = Math.round(p.reduce((a,b)=>a+b.progress,0)/p.length);
-  const colors = {'规划中':'#0369a1','推进中':'#b45309','测试中':'#6d28d9','已上线':'#16a34a','暂停':'#9ca3af'};
-  document.getElementById('stats-area').innerHTML =
-    `<div class="stat-card"><div class="stat-num">${p.length}</div><div class="stat-label">总产品数</div></div>` +
-    ['推进中','测试中','已上线','规划中','暂停'].map(s=>
-      `<div class="stat-card"><div class="stat-num" style="color:${colors[s]}">${counts[s]}</div><div class="stat-label">${s}</div></div>`
-    ).join('') +
-    `<div class="stat-card"><div class="stat-num" style="color:var(--primary)">${avg}%</div><div class="stat-label">平均进度</div></div>`;
+  if (!p.length) return;
+  const teams = new Set(p.map(x => x.group || 'Other')).size;
+  const inProgress = p.filter(x => x.status === '推进中').length;
+  const launched = p.filter(x => x.status === '已上线').length;
+  const avg = Math.round(p.reduce((a,b) => a+b.progress, 0) / p.length);
+  document.getElementById('stats-area').innerHTML = `
+    <div class="stats-bar">
+      <div class="stat-bar-item">
+        <div class="stat-bar-num">${teams}</div>
+        <div class="stat-bar-label">团队</div>
+      </div>
+      <div class="stat-bar-divider"></div>
+      <div class="stat-bar-item">
+        <div class="stat-bar-num">${p.length}</div>
+        <div class="stat-bar-label">产品总数</div>
+      </div>
+      <div class="stat-bar-divider"></div>
+      <div class="stat-bar-item">
+        <div class="stat-bar-num" style="color:#b45309">${inProgress}</div>
+        <div class="stat-bar-label">推进中</div>
+      </div>
+      <div class="stat-bar-divider"></div>
+      <div class="stat-bar-item">
+        <div class="stat-bar-num" style="color:#16a34a">${launched}</div>
+        <div class="stat-bar-label">已上线</div>
+      </div>
+      <div class="stat-bar-divider"></div>
+      <div class="stat-bar-item">
+        <div class="stat-bar-num" style="color:#2563eb">${avg}%</div>
+        <div class="stat-bar-label">平均进度</div>
+      </div>
+    </div>`;
 }
 
 // ── Cards ──────────────────────────────────────────────────────
@@ -842,12 +883,47 @@ function renderCards() {
   const noRes = document.getElementById('no-results');
   if (!list.length) { grid.innerHTML = ''; noRes.style.display = 'block'; return; }
   noRes.style.display = 'none';
-  if (viewMode === 'group') {
-    renderGrouped(list, grid);
-  } else {
-    grid.className = 'grid';
-    grid.innerHTML = list.map(cardHTML).join('');
-  }
+  renderTeamPanels(list, grid);
+}
+
+function renderTeamPanels(list, grid) {
+  const groupOrder = ['Yuetai Shang', 'Yang Li', 'Haibo Zhang', 'Yong Liu'];
+  const groupColors = { 'Yuetai Shang': '#2563eb', 'Yang Li': '#d97706', 'Haibo Zhang': '#16a34a', 'Yong Liu': '#7c3aed' };
+  const activeGroups = groupOrder.filter(g => appData.products.some(p => (p.group||'Other') === g));
+  grid.className = '';
+  grid.innerHTML = `<div class="team-panels">` + activeGroups.map(group => {
+    const items = list.filter(p => (p.group||'Other') === group);
+    if (!items.length) return '';
+    const allItems = appData.products.filter(p => (p.group||'Other') === group);
+    const color = groupColors[group] || '#6b7280';
+    const avg = Math.round(allItems.reduce((a,p) => a+p.progress, 0) / allItems.length);
+    const initial = group.charAt(0).toUpperCase();
+    return `
+    <div class="team-panel">
+      <div class="team-panel-header" style="background:${color}">
+        <div class="team-avatar-lg">${initial}</div>
+        <div>
+          <div class="team-panel-name">${esc(group)}</div>
+          <div class="team-panel-meta">${allItems.length} 个产品 · 平均 ${avg}%</div>
+        </div>
+      </div>
+      <div class="team-panel-body">
+        ${items.map(p => {
+          const pc = p.progress >= 100 ? '#16a34a' : p.progress >= 60 ? '#2563eb' : p.progress >= 30 ? '#d97706' : '#9ca3af';
+          return `<div class="tp-row" onclick="openDetailPage('${esc(p.id)}')">
+            <div class="tp-name">${esc(p.name)}</div>
+            <div class="tp-right">
+              <span class="badge status-${esc(p.status)}" style="font-size:10px;padding:2px 7px">
+                <span class="badge-dot status-dot-${esc(p.status)}"></span>${esc(p.status)}
+              </span>
+              <div class="tp-prog"><div class="tp-prog-fill" style="width:${p.progress}%;background:${pc}"></div></div>
+              <span class="tp-pct" style="color:${pc}">${p.progress}%</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('') + `</div>`;
 }
 
 function renderGrouped(list, grid) {
