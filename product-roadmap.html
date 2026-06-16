@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>产品研发进度看板</title>
+<title>Freshape 产品研发进度看板</title>
 <style>
   :root {
     --primary: #2563eb; --primary-light: #eff6ff;
@@ -19,7 +19,7 @@
   /* HEADER */
   .header { background: white; border-bottom: 1px solid var(--border); padding: 0 28px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,.06); gap: 12px; }
   .header-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
-  .logo { width: 34px; height: 34px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 17px; font-weight: 700; flex-shrink: 0; }
+  .logo { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
   .header-title { font-size: 16px; font-weight: 600; white-space: nowrap; }
   .header-sub { font-size: 11px; color: var(--text-muted); }
   .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
@@ -286,7 +286,7 @@
 <script>
 const DEFAULT_DATA = {
   lastUpdated: "2026-06-16",
-  company: "HiWood",
+  company: "Freshape",
   products: [
     {
       id: "P001",
@@ -546,7 +546,23 @@ const DEFAULT_DATA = {
 
 <div class="header">
   <div class="header-left">
-    <div class="logo">H</div>
+    <div class="logo">
+      <svg width="34" height="34" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#22c55e"/>
+            <stop offset="100%" stop-color="#15803d"/>
+          </linearGradient>
+        </defs>
+        <rect width="34" height="34" rx="8" fill="url(#lg)"/>
+        <!-- leaf shape -->
+        <path d="M17 7 C17 7 9 11 9 18 C9 23 12.5 26 17 26 C21.5 26 25 23 25 18 C25 11 17 7 17 7Z" fill="rgba(255,255,255,0.25)"/>
+        <!-- stem -->
+        <line x1="17" y1="26" x2="17" y2="29" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <!-- F letter -->
+        <text x="13" y="23" font-family="-apple-system,sans-serif" font-size="13" font-weight="800" fill="white">F</text>
+      </svg>
+    </div>
     <div>
       <div class="header-title" id="hdr-title">产品研发进度看板</div>
       <div class="header-sub" id="hdr-sub"></div>
