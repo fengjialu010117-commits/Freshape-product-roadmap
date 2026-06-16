@@ -961,7 +961,7 @@ function renderProductMilestones() {
         const overdue = m.status!=='done' && m.date && new Date(m.date)<today;
         const cls = overdue ? 'overdue' : m.status;
         return `<div class="pm-ms-item ${cls}">
-          <div class="pm-ms-dot">${m.status==='done'?'✓':overdue?'!':m.status==='current'?'▶':''}</div>
+          <div class="pm-ms-dot">${m.status==='done'?'✓':overdue?'!':''}</div>
           <div class="pm-ms-name">${esc(m.name)}</div>
           <div class="pm-ms-date">${esc(m.date||'')}</div>
         </div>`;
@@ -1319,7 +1319,7 @@ function renderTeamPage(group) {
       <div class="tp-detail-milestones">
         ${p.milestones.map(m => `
         <div class="tpdm-item ${esc(m.status)}">
-          <div class="tpdm-dot">${m.status==='done'?'✓':m.status==='current'?'▶':''}</div>
+          <div class="tpdm-dot">${m.status==='done'?'✓':''}</div>
           <div class="tpdm-name">${esc(m.name)}</div>
         </div>`).join('')}
       </div>` : '';
