@@ -519,7 +519,7 @@ const DEFAULT_DATA = {
         { date: "2026-06-12", author: "李明", content: "供应商完成首批试产 200 套，质检报告预计本周到达，尺寸精度符合要求，等待表面处理确认。" }
       ],
       documents: [], nextSteps: [], weeklyLogs: [
-        { id: 'wl001', meetingDate: '2026-06-16', author: '市场组', completed: '完成供应商首批试产质检，500套样品验收通过，表面处理工艺确认。亚马逊 Listing 关键词调研完成，主图拍摄方案定稿。', nextPlan: [
+        { id: 'wl001', meetingDate: '2026-06-16', author: '市场组', completed: '会议确认样品质检结果：首批500套通过，表面处理工艺（磨砂+油墨）定稿，供应商交期 6/25。讨论亚马逊主站 Listing 关键词策略，决定主打"bamboo phone case"长尾词，主图方案由摄影团队6/19执行。', nextPlan: [
           { id: 'np001a', text: '启动产品主图拍摄（6/19）', done: false },
           { id: 'np001b', text: '跟进 FBA 头程物流报价', done: false },
           { id: 'np001c', text: '完成 A+ 内容设计初稿提交', done: false }
@@ -551,7 +551,7 @@ const DEFAULT_DATA = {
         { date: "2026-04-02", author: "张晓", content: "Q1 收官：GMV 32 万欧元，Reviews 623 条，评分 4.6 ★，全部目标达成。iPhone 17 系列模具立项已启动。" }
       ],
       documents: [], nextSteps: [], weeklyLogs: [
-        { id: 'wl002', meetingDate: '2026-06-16', author: '市场组', completed: 'Q2 广告 ACOS 优化至 18%，新增 Vine 评价 32 条，DE 站进入品类 Top 50。iPhone 17 系列模具图纸已确认。', nextPlan: [
+        { id: 'wl002', meetingDate: '2026-06-16', author: '市场组', completed: '回顾 Q2 广告数据：ACOS 从 24% 降至 18%，Vine 计划新增评价32条，DE 站已进 Top 50。iPhone 17 模具图纸供应商已确认，开模周期约25天。会议决定 Prime Day 预算按去年1.5倍申请，UK 站 Listing 纳入下周优化排期。', nextPlan: [
           { id: 'np002a', text: '跟进 iPhone 17 模具开模进度', done: false },
           { id: 'np002b', text: '准备 Prime Day 广告预算方案', done: false },
           { id: 'np002c', text: 'UK 站 Listing 优化', done: false }
@@ -583,7 +583,7 @@ const DEFAULT_DATA = {
         { date: "2026-06-10", author: "王芳", content: "完成初步竞品扫描，已整理 12 款主要竞品数据。本周开始用户访谈，下周出调研报告。" }
       ],
       documents: [], nextSteps: [], weeklyLogs: [
-        { id: 'wl003', meetingDate: '2026-06-16', author: '市场组', completed: '完成 12 款竞品深度分析，用户访谈 8 人次，整理出 3 大核心痛点。PRD 框架草稿已完成。', nextPlan: [
+        { id: 'wl003', meetingDate: '2026-06-16', author: '市场组', completed: '分享了 12 款竞品调研结论：主要竞品价格带集中 $25-40，评价数普遍不足。8位用户访谈核心反馈：防摔、握感、不影响无线充电为三大痛点。会议对 PRD 框架草稿进行了第一轮评审，结构通过，待补充供应商预报价后下周正式评审。', nextPlan: [
           { id: 'np003a', text: '完善 PRD 初稿并提交内部评审', done: false },
           { id: 'np003b', text: '联系 2-3 家潜在供应商做预报价', done: false },
           { id: 'np003c', text: '确定键盘兼容尺寸规格', done: false }
@@ -641,7 +641,7 @@ const DEFAULT_DATA = {
         { date: "2026-06-14", author: "陈浩", content: "首批 2000 套已出仓，头程物流单号已录入，预计 6/28 到达 ONT8 仓库。Listing 主图已完成，A+ 内容设计稿审核中。" }
       ],
       documents: [], nextSteps: [], weeklyLogs: [
-        { id: 'wl005', meetingDate: '2026-06-16', author: '市场组', completed: '货物已发出，物流追踪正常，预计 6/28 入仓。主图 8 张全部定稿，Listing 文案完成英文版。A+ 设计稿已提交审核。', nextPlan: [
+        { id: 'wl005', meetingDate: '2026-06-16', author: '市场组', completed: '头程物流确认发出，预计 6/28 到 ONT8 仓库，物流单号已同步运营。主图8张审核通过，Listing 文案英文版完成，A+ 设计稿已提交，等待内容团队反馈。会议重点讨论上线首周广告策略，决定采用自动+手动混跑，初期预算 $50/天。', nextPlan: [
           { id: 'np005a', text: '确认到仓后立即上线 Listing', done: false },
           { id: 'np005b', text: '启动站内广告（预算 $50/天）', done: false },
           { id: 'np005c', text: '联系 Vine 申请首批评价', done: false },
@@ -965,7 +965,7 @@ function renderProductMilestones() {
         ? `<hr class="pm-divider">
            <div class="pm-weekly">
              <div class="pm-weekly-done">
-               <div class="pm-weekly-label">本周完成</div>
+               <div class="pm-weekly-label">会议纪要</div>
                <div class="pm-weekly-text">${esc(latest.completed||'—')}</div>
              </div>
              <div class="pm-weekly-next">
@@ -1033,7 +1033,7 @@ function renderDigest() {
             <div class="digest-product-name">${statusDot}${esc(p.name)}</div>
             <div class="digest-meta">${esc(latest.meetingDate)} 周会 · ${esc(latest.author||'')}</div>
             ${latest.completed ? `<div class="digest-section completed">
-              <div class="digest-section-label">本周完成</div>
+              <div class="digest-section-label">会议纪要</div>
               <div class="digest-section-text">${esc(latest.completed)}</div>
             </div>` : ''}
             ${latest.nextPlan && (Array.isArray(latest.nextPlan) ? latest.nextPlan.length : latest.nextPlan) ? `<div class="digest-section next">
@@ -1629,8 +1629,8 @@ function openEdit(id) {
         <div class="form-field"><label>记录人</label><input type="text" id="e-wl-author" placeholder="你的名字"></div>
       </div>
       <div class="form-field" style="margin-bottom:8px">
-        <label>本周完成</label>
-        <textarea id="e-completed" placeholder="这周做了什么、达成了哪些进展…" style="min-height:64px"></textarea>
+        <label>会议纪要</label>
+        <textarea id="e-completed" placeholder="会议讨论要点、决策结论、重要进展…" style="min-height:64px"></textarea>
       </div>
       <div class="form-field" style="margin-bottom:8px">
         <label>本周计划（逐条添加）</label>
@@ -1859,7 +1859,7 @@ function addWeeklyLog(id) {
   const author = document.getElementById('e-wl-author').value.trim();
   const completed = document.getElementById('e-completed').value.trim();
   if (!meetingDate) { alert('请选择会议日期'); return; }
-  if (!completed && pendingPlanItems.length === 0) { alert('请至少填写本周完成或添加本周计划项'); return; }
+  if (!completed && pendingPlanItems.length === 0) { alert('请至少填写会议纪要或添加本周计划项'); return; }
   const p = appData.products.find(x => x.id === id);
   if (!p.weeklyLogs) p.weeklyLogs = [];
   p.weeklyLogs.unshift({ id: 'wl' + Date.now(), meetingDate, author, completed, nextPlan: [...pendingPlanItems] });
@@ -2270,7 +2270,7 @@ function renderDetailPage(id) {
                 <span class="wl-author">${esc(l.author||'')}</span>
               </div>
               <div class="wl-body">
-                <div class="wl-completed"><div class="wl-label">本周完成</div><div class="wl-text">${esc(l.completed||'—')}</div></div>
+                <div class="wl-completed"><div class="wl-label">会议纪要</div><div class="wl-text">${esc(l.completed||'—')}</div></div>
                 <div class="wl-nextplan"><div class="wl-label">本周计划</div>${planItemsHTML(l.nextPlan, p.id, l.id, true)}</div>
               </div>
             </div>`).join('')}
