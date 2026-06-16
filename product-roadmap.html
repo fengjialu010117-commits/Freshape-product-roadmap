@@ -421,9 +421,10 @@
   .wl-card { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
   .wl-header { display: flex; align-items: center; justify-content: space-between; padding: 11px 16px; background: #f8fafc; border-bottom: 1px solid var(--border); }
   .wl-date { font-size: 13px; font-weight: 700; color: var(--text); }
-  .wl-author { font-size: 11px; color: #94a3b8; }
-  .wl-body { padding: 14px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 640px) { .wl-body { grid-template-columns: 1fr; } }
+  .wl-author { font-size: 11px; color: #94a3b8; flex: 1; margin-left: 8px; }
+  .wl-delete { font-size: 11px; color: #cbd5e1; cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: background .15s, color .15s; }
+  .wl-delete:hover { background: #fee2e2; color: #dc2626; }
+  .wl-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
   .wl-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 5px; }
   .wl-completed .wl-label { color: #16a34a; }
   .wl-nextplan .wl-label { color: #2563eb; }
@@ -519,7 +520,7 @@ const DEFAULT_DATA = {
         { date: "2026-06-12", author: "李明", content: "供应商完成首批试产 200 套，质检报告预计本周到达，尺寸精度符合要求，等待表面处理确认。" }
       ],
       documents: [], nextSteps: [], weeklyLogs: [
-        { id: 'wl001', meetingDate: '2026-06-16', author: '市场组', completed: '会议确认样品质检结果：首批500套通过，表面处理工艺（磨砂+油墨）定稿，供应商交期 6/25。讨论亚马逊主站 Listing 关键词策略，决定主打"bamboo phone case"长尾词，主图方案由摄影团队6/19执行。', nextPlan: [
+        { id: 'wl001', meetingDate: '2026-06-16', author: '市场组', completed: '本次会议主要同步手机壳样品测试进展。测试组反馈第二批样品跌落测试（1.5m 六面跌落）全部通过，但侧键开孔位置与 iPhone 16 Pro Max 实机有约 0.3mm 偏差，导致按键手感偏紧，已要求供应商本周内出修正版模具。表面处理方面，哑光磨砂款效果确认通过，光面款在油脂接触后有明显指纹残留，会议决定光面款暂缓，优先推进磨砂款上线。此外讨论了包装方案，最终选定牛皮纸环保盒，预计包装成本控制在 $0.45/套以内。', nextPlan: [
           { id: 'np001a', text: '启动产品主图拍摄（6/19）', done: false },
           { id: 'np001b', text: '跟进 FBA 头程物流报价', done: false },
           { id: 'np001c', text: '完成 A+ 内容设计初稿提交', done: false }
@@ -1620,17 +1621,23 @@ function openEdit(id) {
     </div>
 
     <!-- 周会记录 -->
-    <div class="edit-section">
-      <div class="edit-section-title">📋 添加周会记录</div>
-      ${(p.weeklyLogs||[]).length ? `
-      <div style="margin-bottom:12px;font-size:12px;color:var(--text-muted)">已有 ${p.weeklyLogs.length} 条记录，最近：${esc(p.weeklyLogs.slice().sort((a,b)=>b.meetingDate>a.meetingDate?1:-1)[0].meetingDate)}</div>` : ''}
+    ${(() => {
+      const sorted = (p.weeklyLogs||[]).slice().sort((a,b)=>b.meetingDate>a.meetingDate?1:-1);
+      const latest = sorted[0] || null;
+      pendingPlanItems = latest && Array.isArray(latest.nextPlan) ? latest.nextPlan.map(i=>({...i})) : [];
+      const fillDate = latest ? latest.meetingDate : today;
+      const fillAuthor = latest ? (latest.author||'') : '';
+      const fillCompleted = latest ? (latest.completed||'') : '';
+      return `<div class="edit-section">
+      <div class="edit-section-title">📋 周会记录</div>
+      ${latest ? `<div style="margin-bottom:10px;font-size:12px;color:var(--text-muted)">正在编辑：${esc(latest.meetingDate)} · 改日期后保存将新建一条</div>` : ''}
       <div class="form-row">
-        <div class="form-field"><label>会议日期</label><input type="date" id="e-meeting-date" value="${today}"></div>
-        <div class="form-field"><label>记录人</label><input type="text" id="e-wl-author" placeholder="你的名字"></div>
+        <div class="form-field"><label>会议日期</label><input type="date" id="e-meeting-date" value="${fillDate}"></div>
+        <div class="form-field"><label>记录人</label><input type="text" id="e-wl-author" placeholder="你的名字" value="${esc(fillAuthor)}"></div>
       </div>
       <div class="form-field" style="margin-bottom:8px">
         <label>会议纪要</label>
-        <textarea id="e-completed" placeholder="会议讨论要点、决策结论、重要进展…" style="min-height:64px"></textarea>
+        <textarea id="e-completed" placeholder="会议讨论要点、决策结论、重要进展…" style="min-height:64px">${esc(fillCompleted)}</textarea>
       </div>
       <div class="form-field" style="margin-bottom:8px">
         <label>本周计划（逐条添加）</label>
@@ -1641,7 +1648,8 @@ function openEdit(id) {
         </div>
       </div>
       <button class="btn btn-primary btn-sm" onclick="addWeeklyLog('${esc(id)}')">保存周会记录</button>
-    </div>
+    </div>`;
+    })()}
 
     <!-- 里程碑 -->
     <div class="edit-section">
@@ -1862,11 +1870,19 @@ function addWeeklyLog(id) {
   if (!completed && pendingPlanItems.length === 0) { alert('请至少填写会议纪要或添加本周计划项'); return; }
   const p = appData.products.find(x => x.id === id);
   if (!p.weeklyLogs) p.weeklyLogs = [];
-  p.weeklyLogs.unshift({ id: 'wl' + Date.now(), meetingDate, author, completed, nextPlan: [...pendingPlanItems] });
+  const existing = p.weeklyLogs.find(l => l.meetingDate === meetingDate);
+  const isUpdate = !!existing;
+  if (existing) {
+    existing.author = author;
+    existing.completed = completed;
+    existing.nextPlan = [...pendingPlanItems];
+  } else {
+    p.weeklyLogs.unshift({ id: 'wl' + Date.now(), meetingDate, author, completed, nextPlan: [...pendingPlanItems] });
+  }
   pendingPlanItems = [];
   saveData(); renderCards(); renderDigest(); renderProductMilestones();
   openEdit(id);
-  flash('周会记录已保存');
+  flash(isUpdate ? '周会记录已更新' : '周会记录已新建');
 }
 
 function milestoneRowHTML(id, m, i) {
@@ -2268,10 +2284,11 @@ function renderDetailPage(id) {
               <div class="wl-header">
                 <span class="wl-date">${esc(l.meetingDate)} 周会</span>
                 <span class="wl-author">${esc(l.author||'')}</span>
+                <span class="wl-delete" onclick="deleteWeeklyLog('${esc(p.id)}','${esc(l.id)}')" title="删除这条记录">✕</span>
               </div>
               <div class="wl-body">
-                <div class="wl-completed"><div class="wl-label">会议纪要</div><div class="wl-text">${esc(l.completed||'—')}</div></div>
                 <div class="wl-nextplan"><div class="wl-label">本周计划</div>${planItemsHTML(l.nextPlan, p.id, l.id, true)}</div>
+                <div class="wl-completed"><div class="wl-label">会议纪要</div><div class="wl-text">${esc(l.completed||'—')}</div></div>
               </div>
             </div>`).join('')}
           </div>`;
