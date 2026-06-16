@@ -978,7 +978,7 @@ function renderProductMilestones() {
            <div class="pm-weekly-meta">${esc(latest.meetingDate)} 周会${latest.author?' · '+esc(latest.author):''}</div>`
         : `<hr class="pm-divider"><div class="pm-no-log">暂无周会记录</div>`;
 
-      return `<div class="pm-card" onclick="openDetailPage('${esc(p.id)}')">
+      return `<div class="pm-card" id="pm-card-${esc(p.id)}" onclick="openDetailPage('${esc(p.id)}')">
         <div class="pm-header">
           <div style="width:4px;height:36px;border-radius:2px;background:${accentColor};flex-shrink:0"></div>
           <div style="flex:1;min-width:0">
@@ -1025,27 +1025,28 @@ function renderDigest() {
         const statusDot = `<span style="width:6px;height:6px;border-radius:50%;display:inline-block;background:${
           p.status==='已上线'?'#4ade80':p.status==='推进中'?'#fbbf24':p.status==='测试中'?'#a78bfa':'#cbd5e1'}"></span>`;
         if (!latest) return `
-          <div class="digest-item">
+          <div class="digest-item" onclick="scrollToPmCard('${esc(p.id)}')" style="cursor:pointer">
             <div class="digest-product-name">${statusDot}${esc(p.name)}</div>
             <div class="digest-meta">${esc(p.status)}</div>
             <div class="digest-empty">暂无本期记录</div>
           </div>`;
         return `
-          <div class="digest-item">
+          <div class="digest-item" onclick="scrollToPmCard('${esc(p.id)}')" style="cursor:pointer">
             <div class="digest-product-name">${statusDot}${esc(p.name)}</div>
             <div class="digest-meta">${esc(latest.meetingDate)} 周会 · ${esc(latest.author||'')}</div>
-            ${latest.completed ? `<div class="digest-section completed">
-              <div class="digest-section-label">会议纪要</div>
-              <div class="digest-section-text">${esc(latest.completed)}</div>
-            </div>` : ''}
             ${latest.nextPlan && (Array.isArray(latest.nextPlan) ? latest.nextPlan.length : latest.nextPlan) ? `<div class="digest-section next">
               <div class="digest-section-label">本周计划</div>
               <div class="digest-section-text">${Array.isArray(latest.nextPlan) ? latest.nextPlan.map(i=>`<div style="display:flex;align-items:flex-start;gap:5px;margin-bottom:2px"><span style="flex-shrink:0;margin-top:1px">${i.done?'✓':'○'}</span><span style="${i.done?'text-decoration:line-through;color:#9ca3af':''}">${esc(i.text)}</span></div>`).join('') : esc(latest.nextPlan)}</div>
-            </div>` : ''}
+            </div>` : '<div class="digest-empty">暂无本周计划</div>'}
           </div>`;
       }).join('')}
     </div>
   `;
+}
+
+function scrollToPmCard(pid) {
+  const el = document.getElementById('pm-card-' + pid);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function toggleDigest() {
