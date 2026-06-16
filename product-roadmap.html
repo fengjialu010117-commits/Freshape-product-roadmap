@@ -249,6 +249,33 @@
 
   /* CARD STAGE */
   .card-stage { font-size: 11px; color: #92400e; background: #fffbeb; padding: 2px 8px; border-radius: 8px; margin-top: 4px; display: inline-block; }
+
+  /* CHARTS */
+  .charts-section { padding: 0 28px 40px; }
+  .charts-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .chart-card { background: white; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+  .chart-card-header { padding: 14px 18px 12px; color: white; }
+  .chart-card-name { font-size: 15px; font-weight: 700; }
+  .chart-card-sub { font-size: 12px; opacity: .8; margin-top: 2px; }
+  .chart-card-body { padding: 16px 18px; }
+  .chart-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .chart-label { font-size: 12px; color: var(--text-muted); }
+  .chart-val { font-size: 13px; font-weight: 600; }
+  .chart-progress { height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; margin-bottom: 14px; }
+  .chart-progress-fill { height: 100%; border-radius: 3px; }
+  .status-seg-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; gap: 1px; margin-bottom: 8px; }
+  .status-seg { height: 100%; transition: width .3s; }
+  .status-legend { display: flex; flex-wrap: wrap; gap: 8px; }
+  .status-legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-muted); }
+  .status-legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .overview-card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 18px 20px; }
+  .overview-title { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 14px; }
+  .overview-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .overview-bar-label { font-size: 12px; width: 48px; color: var(--text-muted); }
+  .overview-bar-track { flex: 1; height: 10px; background: #f3f4f6; border-radius: 5px; overflow: hidden; }
+  .overview-bar-fill { height: 100%; border-radius: 5px; }
+  .overview-bar-val { font-size: 12px; font-weight: 600; width: 28px; text-align: right; }
 </style>
 </head>
 <body>
@@ -561,6 +588,8 @@ const DEFAULT_DATA = {
   </div>
 </div>
 
+<div class="charts-section" id="charts-area"></div>
+
 <!-- DETAIL MODAL -->
 <div class="modal-overlay" id="detail-overlay" onclick="overlayClick(event,'detail-overlay')">
   <div class="modal">
@@ -650,6 +679,74 @@ function renderPage() {
     lines.map(l => `<button class="fbtn" onclick="setFilter('line','${esc(l)}',this)">${esc(l)}</button>`).join('');
   renderStats();
   renderCards();
+  renderCharts();
+}
+
+function renderCharts() {
+  const p = appData.products;
+  if (!p.length) return;
+  const groupOrder = ['Yuetai Shang', 'Yang Li'];
+  const groupColors = { 'Yuetai Shang': '#2563eb', 'Yang Li': '#d97706' };
+  const statusColors = { '规划中':'#0369a1','推进中':'#f59e0b','测试中':'#7c3aed','已上线':'#16a34a','暂停':'#9ca3af' };
+  const groups = groupOrder.filter(g => p.some(x => (x.group||'Other') === g));
+
+  const teamCards = groups.map(group => {
+    const items = p.filter(x => (x.group||'Other') === group);
+    const avg = Math.round(items.reduce((a,x) => a+x.progress, 0) / items.length);
+    const color = groupColors[group] || '#6b7280';
+    const pc = avg >= 100 ? '#16a34a' : avg >= 60 ? '#2563eb' : avg >= 30 ? '#d97706' : '#9ca3af';
+    const statusCounts = {};
+    ['规划中','推进中','测试中','已上线','暂停'].forEach(s => { statusCounts[s] = items.filter(x=>x.status===s).length; });
+    const total = items.length;
+    const segBar = Object.entries(statusCounts).filter(([,c])=>c>0).map(([s,c])=>
+      `<div class="status-seg" style="background:${statusColors[s]};width:${(c/total*100).toFixed(1)}%"></div>`
+    ).join('');
+    const legend = Object.entries(statusCounts).filter(([,c])=>c>0).map(([s,c])=>
+      `<div class="status-legend-item"><div class="status-legend-dot" style="background:${statusColors[s]}"></div>${s} ${c}</div>`
+    ).join('');
+    return `
+    <div class="chart-card">
+      <div class="chart-card-header" style="background:${color}">
+        <div class="chart-card-name">${esc(group)}</div>
+        <div class="chart-card-sub">${total} 个产品</div>
+      </div>
+      <div class="chart-card-body">
+        <div class="chart-row">
+          <span class="chart-label">平均进度</span>
+          <span class="chart-val" style="color:${pc}">${avg}%</span>
+        </div>
+        <div class="chart-progress"><div class="chart-progress-fill" style="width:${avg}%;background:${pc}"></div></div>
+        <div class="chart-label" style="margin-bottom:6px">状态分布</div>
+        <div class="status-seg-bar">${segBar}</div>
+        <div class="status-legend">${legend}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // overall status bar chart
+  const allStatus = ['推进中','测试中','已上线','规划中','暂停'];
+  const maxCount = Math.max(...allStatus.map(s => p.filter(x=>x.status===s).length), 1);
+  const overviewBars = allStatus.map(s => {
+    const count = p.filter(x=>x.status===s).length;
+    if (!count) return '';
+    const w = Math.round(count/maxCount*100);
+    return `<div class="overview-bar-row">
+      <div class="overview-bar-label">${s}</div>
+      <div class="overview-bar-track"><div class="overview-bar-fill" style="width:${w}%;background:${statusColors[s]}"></div></div>
+      <div class="overview-bar-val" style="color:${statusColors[s]}">${count}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('charts-area').innerHTML = `
+    <div class="charts-title">团队概览</div>
+    <div class="charts-grid">
+      ${teamCards}
+      <div class="overview-card">
+        <div class="overview-title">全部产品状态分布</div>
+        ${overviewBars}
+      </div>
+    </div>
+  `;
 }
 
 function saveData() {
