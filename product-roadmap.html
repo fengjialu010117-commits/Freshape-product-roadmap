@@ -41,11 +41,11 @@
 
   /* STATS BAR */
   .stats { background: white; border-bottom: 1px solid var(--border); padding: 0 28px; }
-  .stats-bar { display: flex; align-items: stretch; }
-  .stat-bar-item { flex: 1; padding: 18px 0; text-align: center; }
-  .stat-bar-divider { width: 1px; background: var(--border); margin: 12px 0; flex-shrink: 0; }
+  .stats-bar { display: flex; align-items: stretch; gap: 12px; padding: 16px 28px; }
+  .stat-bar-item { flex: 1; padding: 16px 20px; text-align: center; border-radius: 12px; border: 1px solid transparent; }
+  .stat-bar-divider { display: none; }
   .stat-bar-num { font-size: 28px; font-weight: 800; line-height: 1; }
-  .stat-bar-label { font-size: 11px; color: var(--text-muted); margin-top: 5px; font-weight: 500; }
+  .stat-bar-label { font-size: 11px; margin-top: 5px; font-weight: 600; opacity: .7; }
 
   /* TEAM PANELS */
   .team-panels { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
@@ -987,6 +987,7 @@ function renderProductMilestones() {
         : `<hr class="pm-divider"><div class="pm-no-log">暂无周会记录</div>`;
 
       return `<div class="pm-card" id="pm-card-${esc(p.id)}" onclick="openDetailPage('${esc(p.id)}')">
+        <div style="height:5px;background:linear-gradient(90deg,${accentColor}cc,${accentColor}44);border-radius:14px 14px 0 0"></div>
         <div class="pm-card-body">
         <div class="pm-header">
           <div style="width:4px;height:36px;border-radius:2px;background:${accentColor};flex-shrink:0"></div>
@@ -1185,28 +1186,24 @@ function renderStats() {
   const avg = Math.round(p.reduce((a,b) => a+b.progress, 0) / p.length);
   document.getElementById('stats-area').innerHTML = `
     <div class="stats-bar">
-      <div class="stat-bar-item">
+      <div class="stat-bar-item" style="background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8">
         <div class="stat-bar-num">${teams}</div>
         <div class="stat-bar-label">团队</div>
       </div>
-      <div class="stat-bar-divider"></div>
-      <div class="stat-bar-item">
+      <div class="stat-bar-item" style="background:#f0fdf4;border-color:#bbf7d0;color:#15803d">
         <div class="stat-bar-num">${p.length}</div>
         <div class="stat-bar-label">产品总数</div>
       </div>
-      <div class="stat-bar-divider"></div>
-      <div class="stat-bar-item">
-        <div class="stat-bar-num" style="color:#b45309">${inProgress}</div>
+      <div class="stat-bar-item" style="background:#fffbeb;border-color:#fde68a;color:#b45309">
+        <div class="stat-bar-num">${inProgress}</div>
         <div class="stat-bar-label">推进中</div>
       </div>
-      <div class="stat-bar-divider"></div>
-      <div class="stat-bar-item">
-        <div class="stat-bar-num" style="color:#16a34a">${launched}</div>
+      <div class="stat-bar-item" style="background:#f0fdf4;border-color:#bbf7d0;color:#16a34a">
+        <div class="stat-bar-num">${launched}</div>
         <div class="stat-bar-label">已上线</div>
       </div>
-      <div class="stat-bar-divider"></div>
-      <div class="stat-bar-item">
-        <div class="stat-bar-num" style="color:#2563eb">${avg}%</div>
+      <div class="stat-bar-item" style="background:#faf5ff;border-color:#e9d5ff;color:#7c3aed">
+        <div class="stat-bar-num">${avg}%</div>
         <div class="stat-bar-label">平均进度</div>
       </div>
     </div>`;
