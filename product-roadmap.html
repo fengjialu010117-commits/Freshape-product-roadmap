@@ -408,6 +408,15 @@
   .pm-weekly-meta { font-size:11px; color:#94a3b8; margin-top:8px; }
   .pm-no-log { font-size:13px; color:#cbd5e1; padding:4px 0; }
 
+  /* PLAN ITEMS CHECKLIST */
+  .plan-item { display:flex; align-items:flex-start; gap:8px; padding:5px 0; }
+  .plan-check { width:16px; height:16px; border-radius:4px; border:1.5px solid #d1d5db; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:white; margin-top:2px; transition:all .15s; }
+  .plan-check.done { background:#16a34a; border-color:#16a34a; }
+  .plan-item.interactive { cursor:pointer; }
+  .plan-item.interactive:hover .plan-check:not(.done) { border-color:#2563eb; }
+  .plan-text { font-size:13px; line-height:1.5; color:#374151; flex:1; }
+  .plan-item.done .plan-text { color:#9ca3af; text-decoration:line-through; }
+
   /* WEEKLY LOG */
   .wl-card { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
   .wl-header { display: flex; align-items: center; justify-content: space-between; padding: 11px 16px; background: #f8fafc; border-bottom: 1px solid var(--border); }
@@ -510,7 +519,11 @@ const DEFAULT_DATA = {
         { date: "2026-06-12", author: "李明", content: "供应商完成首批试产 200 套，质检报告预计本周到达，尺寸精度符合要求，等待表面处理确认。" }
       ],
       documents: [], nextSteps: [], weeklyLogs: [
-        { id: 'wl001', meetingDate: '2026-06-16', author: '市场组', completed: '完成供应商首批试产质检，500套样品验收通过，表面处理工艺确认。亚马逊 Listing 关键词调研完成，主图拍摄方案定稿。', nextPlan: '启动产品主图拍摄（6/19），跟进 FBA 头程物流报价，完成 A+ 内容设计初稿提交。' }
+        { id: 'wl001', meetingDate: '2026-06-16', author: '市场组', completed: '完成供应商首批试产质检，500套样品验收通过，表面处理工艺确认。亚马逊 Listing 关键词调研完成，主图拍摄方案定稿。', nextPlan: [
+          { id: 'np001a', text: '启动产品主图拍摄（6/19）', done: false },
+          { id: 'np001b', text: '跟进 FBA 头程物流报价', done: false },
+          { id: 'np001c', text: '完成 A+ 内容设计初稿提交', done: false }
+        ] }
       ]
     },
     {
@@ -538,7 +551,11 @@ const DEFAULT_DATA = {
         { date: "2026-04-02", author: "张晓", content: "Q1 收官：GMV 32 万欧元，Reviews 623 条，评分 4.6 ★，全部目标达成。iPhone 17 系列模具立项已启动。" }
       ],
       documents: [], nextSteps: [], weeklyLogs: [
-        { id: 'wl002', meetingDate: '2026-06-16', author: '市场组', completed: 'Q2 广告 ACOS 优化至 18%，新增 Vine 评价 32 条，DE 站进入品类 Top 50。iPhone 17 系列模具图纸已确认。', nextPlan: '跟进 iPhone 17 模具开模进度，准备 Prime Day 广告预算方案，UK 站 Listing 优化。' }
+        { id: 'wl002', meetingDate: '2026-06-16', author: '市场组', completed: 'Q2 广告 ACOS 优化至 18%，新增 Vine 评价 32 条，DE 站进入品类 Top 50。iPhone 17 系列模具图纸已确认。', nextPlan: [
+          { id: 'np002a', text: '跟进 iPhone 17 模具开模进度', done: false },
+          { id: 'np002b', text: '准备 Prime Day 广告预算方案', done: false },
+          { id: 'np002c', text: 'UK 站 Listing 优化', done: false }
+        ] }
       ]
     },
     {
@@ -566,7 +583,11 @@ const DEFAULT_DATA = {
         { date: "2026-06-10", author: "王芳", content: "完成初步竞品扫描，已整理 12 款主要竞品数据。本周开始用户访谈，下周出调研报告。" }
       ],
       documents: [], nextSteps: [], weeklyLogs: [
-        { id: 'wl003', meetingDate: '2026-06-16', author: '市场组', completed: '完成 12 款竞品深度分析，用户访谈 8 人次，整理出 3 大核心痛点。PRD 框架草稿已完成。', nextPlan: '完善 PRD 初稿并提交内部评审，联系 2-3 家潜在供应商做预报价，确定键盘兼容尺寸规格。' }
+        { id: 'wl003', meetingDate: '2026-06-16', author: '市场组', completed: '完成 12 款竞品深度分析，用户访谈 8 人次，整理出 3 大核心痛点。PRD 框架草稿已完成。', nextPlan: [
+          { id: 'np003a', text: '完善 PRD 初稿并提交内部评审', done: false },
+          { id: 'np003b', text: '联系 2-3 家潜在供应商做预报价', done: false },
+          { id: 'np003c', text: '确定键盘兼容尺寸规格', done: false }
+        ] }
       ]
     },
     {
@@ -620,7 +641,12 @@ const DEFAULT_DATA = {
         { date: "2026-06-14", author: "陈浩", content: "首批 2000 套已出仓，头程物流单号已录入，预计 6/28 到达 ONT8 仓库。Listing 主图已完成，A+ 内容设计稿审核中。" }
       ],
       documents: [], nextSteps: [], weeklyLogs: [
-        { id: 'wl005', meetingDate: '2026-06-16', author: '市场组', completed: '货物已发出，物流追踪正常，预计 6/28 入仓。主图 8 张全部定稿，Listing 文案完成英文版。A+ 设计稿已提交审核。', nextPlan: '确认到仓后立即上线 Listing，启动站内广告（预算 $50/天），联系 Vine 申请首批评价，准备独立站产品页上线。' }
+        { id: 'wl005', meetingDate: '2026-06-16', author: '市场组', completed: '货物已发出，物流追踪正常，预计 6/28 入仓。主图 8 张全部定稿，Listing 文案完成英文版。A+ 设计稿已提交审核。', nextPlan: [
+          { id: 'np005a', text: '确认到仓后立即上线 Listing', done: false },
+          { id: 'np005b', text: '启动站内广告（预算 $50/天）', done: false },
+          { id: 'np005c', text: '联系 Vine 申请首批评价', done: false },
+          { id: 'np005d', text: '准备独立站产品页上线', done: false }
+        ] }
       ]
     },
     {
@@ -944,7 +970,7 @@ function renderProductMilestones() {
              </div>
              <div class="pm-weekly-next">
                <div class="pm-weekly-label">下周计划</div>
-               <div class="pm-weekly-text">${esc(latest.nextPlan||'—')}</div>
+               ${planItemsHTML(latest.nextPlan, p.id, latest.id, false)}
              </div>
            </div>
            <div class="pm-weekly-meta">${esc(latest.meetingDate)} 周会${latest.author?' · '+esc(latest.author):''}</div>`
@@ -1010,9 +1036,9 @@ function renderDigest() {
               <div class="digest-section-label">本周完成</div>
               <div class="digest-section-text">${esc(latest.completed)}</div>
             </div>` : ''}
-            ${latest.nextPlan ? `<div class="digest-section next">
+            ${latest.nextPlan && (Array.isArray(latest.nextPlan) ? latest.nextPlan.length : latest.nextPlan) ? `<div class="digest-section next">
               <div class="digest-section-label">下周计划</div>
-              <div class="digest-section-text">${esc(latest.nextPlan)}</div>
+              <div class="digest-section-text">${Array.isArray(latest.nextPlan) ? latest.nextPlan.map(i=>`${i.done?'✓':'○'} ${i.text}`).join(' · ') : esc(latest.nextPlan)}</div>
             </div>` : ''}
           </div>`;
       }).join('')}
@@ -1526,7 +1552,7 @@ function openDetail(id) {
       ${((p.weeklyLogs||[]).slice().sort((a,b)=>b.meetingDate>a.meetingDate?1:-1)).map(l=>`
       <div class="update-item">
         <div class="update-meta"><span style="font-weight:600">${esc(l.meetingDate)} 周会</span><span>${esc(l.author||'')}</span></div>
-        <div class="update-content"><b style="color:#16a34a;font-size:11px">完成：</b>${esc(l.completed||'—')}<br><b style="color:#2563eb;font-size:11px">计划：</b>${esc(l.nextPlan||'—')}</div>
+        <div class="update-content"><b style="color:#16a34a;font-size:11px">完成：</b>${esc(l.completed||'—')}<br><b style="color:#2563eb;font-size:11px">计划：</b>${Array.isArray(l.nextPlan)?l.nextPlan.map(i=>`${i.done?'✓':'○'} ${i.text}`).join(', '):(esc(l.nextPlan||'—'))}</div>
       </div>`).join('') || '<div style="color:var(--text-muted);font-size:13px">暂无记录</div>'}
     </div>
   `;
@@ -1607,8 +1633,12 @@ function openEdit(id) {
         <textarea id="e-completed" placeholder="这周做了什么、达成了哪些进展…" style="min-height:64px"></textarea>
       </div>
       <div class="form-field" style="margin-bottom:8px">
-        <label>下周计划</label>
-        <textarea id="e-nextplan" placeholder="下周/接下来要做什么、需要跟进什么…" style="min-height:64px"></textarea>
+        <label>下周计划（逐条添加）</label>
+        <div id="e-plan-items-list" style="margin-bottom:8px"><div style="font-size:12px;color:#94a3b8;padding:4px 0">尚未添加计划项</div></div>
+        <div style="display:flex;gap:6px">
+          <input type="text" id="e-plan-item" placeholder="输入一条计划，回车添加" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;font-family:inherit" onkeydown="if(event.key==='Enter'){event.preventDefault();addPlanItem()}">
+          <button class="btn btn-secondary btn-sm" onclick="addPlanItem()">添加</button>
+        </div>
       </div>
       <button class="btn btn-primary btn-sm" onclick="addWeeklyLog('${esc(id)}')">保存周会记录</button>
     </div>
@@ -1771,17 +1801,70 @@ function saveBasic(id) {
   flash('状态和进度已保存');
 }
 
+// ── Plan Items ──────────────────────────────────────────────────
+let pendingPlanItems = [];
+
+function planItemsHTML(nextPlan, pid, logId, interactive) {
+  const items = Array.isArray(nextPlan) ? nextPlan : (nextPlan ? [{ id:'legacy', text: nextPlan, done: false }] : []);
+  if (!items.length) return '<span style="color:#94a3b8;font-size:13px">—</span>';
+  return items.map(item => {
+    const cls = `plan-item ${item.done?'done':''} ${interactive?'interactive':''}`;
+    const handler = interactive ? `onclick="togglePlanItem('${esc(pid)}','${esc(logId)}','${esc(item.id)}')"` : '';
+    return `<div class="${cls}" ${handler}>
+      <div class="plan-check ${item.done?'done':''}">${item.done?'✓':''}</div>
+      <span class="plan-text">${esc(item.text)}</span>
+    </div>`;
+  }).join('');
+}
+
+function togglePlanItem(pid, logId, itemId) {
+  const p = appData.products.find(x => x.id === pid);
+  const log = (p.weeklyLogs||[]).find(l => l.id === logId);
+  if (!log || !Array.isArray(log.nextPlan)) return;
+  const item = log.nextPlan.find(i => i.id === itemId);
+  if (!item) return;
+  item.done = !item.done;
+  saveData(); renderProductMilestones();
+  if (document.getElementById('detail-page').classList.contains('open')) renderDetailPage(pid);
+}
+
+function addPlanItem() {
+  const inp = document.getElementById('e-plan-item');
+  const text = inp ? inp.value.trim() : '';
+  if (!text) return;
+  pendingPlanItems.push({ id: 'np' + Date.now(), text, done: false });
+  renderPendingPlanList();
+  inp.value = ''; inp.focus();
+}
+
+function removePlanItem(idx) {
+  pendingPlanItems.splice(idx, 1);
+  renderPendingPlanList();
+}
+
+function renderPendingPlanList() {
+  const list = document.getElementById('e-plan-items-list');
+  if (!list) return;
+  list.innerHTML = pendingPlanItems.length === 0
+    ? '<div style="font-size:12px;color:#94a3b8;padding:4px 0">尚未添加计划项</div>'
+    : pendingPlanItems.map((item, i) => `
+      <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:white;border-radius:6px;border:1px solid var(--border);margin-bottom:4px">
+        <span style="font-size:13px;flex:1">${esc(item.text)}</span>
+        <button onclick="removePlanItem(${i})" style="padding:1px 8px;border:1px solid #fca5a5;background:white;color:#dc2626;border-radius:5px;font-size:11px;cursor:pointer">删</button>
+      </div>`).join('');
+}
+
 function addWeeklyLog(id) {
   const meetingDate = document.getElementById('e-meeting-date').value;
   const author = document.getElementById('e-wl-author').value.trim();
   const completed = document.getElementById('e-completed').value.trim();
-  const nextPlan = document.getElementById('e-nextplan').value.trim();
   if (!meetingDate) { alert('请选择会议日期'); return; }
-  if (!completed && !nextPlan) { alert('请至少填写本周完成或下周计划'); return; }
+  if (!completed && pendingPlanItems.length === 0) { alert('请至少填写本周完成或添加下周计划项'); return; }
   const p = appData.products.find(x => x.id === id);
   if (!p.weeklyLogs) p.weeklyLogs = [];
-  p.weeklyLogs.unshift({ id: 'wl' + Date.now(), meetingDate, author, completed, nextPlan });
-  saveData(); renderCards(); renderDigest();
+  p.weeklyLogs.unshift({ id: 'wl' + Date.now(), meetingDate, author, completed, nextPlan: [...pendingPlanItems] });
+  pendingPlanItems = [];
+  saveData(); renderCards(); renderDigest(); renderProductMilestones();
   openEdit(id);
   flash('周会记录已保存');
 }
@@ -2188,7 +2271,7 @@ function renderDetailPage(id) {
               </div>
               <div class="wl-body">
                 <div class="wl-completed"><div class="wl-label">本周完成</div><div class="wl-text">${esc(l.completed||'—')}</div></div>
-                <div class="wl-nextplan"><div class="wl-label">下周计划</div><div class="wl-text">${esc(l.nextPlan||'—')}</div></div>
+                <div class="wl-nextplan"><div class="wl-label">下周计划</div>${planItemsHTML(l.nextPlan, p.id, l.id, true)}</div>
               </div>
             </div>`).join('')}
           </div>`;
