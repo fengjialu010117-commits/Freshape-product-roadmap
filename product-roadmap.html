@@ -201,6 +201,54 @@
     .modal-header { padding: 14px 16px; }
     .header-right .hbtn span { display: none; }
   }
+
+  /* DETAIL PAGE */
+  .detail-page { display: none; position: fixed; inset: 0; background: #f3f4f6; z-index: 150; overflow-y: auto; }
+  .detail-page.open { display: block; }
+  .detail-nav { background: white; border-bottom: 1px solid var(--border); padding: 0 28px; display: flex; align-items: center; height: 56px; gap: 14px; position: sticky; top: 0; z-index: 10; }
+  .back-btn { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); background: white; font-size: 13px; cursor: pointer; color: var(--text); }
+  .back-btn:hover { background: var(--gray-light); }
+  .detail-content { max-width: 860px; margin: 0 auto; padding: 28px 24px 60px; }
+  .detail-header { background: white; border-radius: 14px; padding: 24px; margin-bottom: 16px; border: 1px solid var(--border); }
+  .detail-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .detail-title { font-size: 24px; font-weight: 700; }
+  .detail-meta-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--text-muted); margin-top: 10px; }
+  .detail-desc { font-size: 14px; color: #374151; margin-top: 10px; line-height: 1.7; }
+  .detail-stage { display: inline-flex; align-items: center; gap: 6px; background: #fffbeb; padding: 6px 14px; border-radius: 20px; font-size: 13px; color: #92400e; font-weight: 500; margin-top: 12px; }
+
+  /* STATS ROW */
+  .detail-stats { display: grid; grid-template-columns: 130px 1fr; gap: 24px; background: white; border-radius: 14px; padding: 24px; margin-bottom: 16px; border: 1px solid var(--border); align-items: center; }
+  .ring-chart { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
+  .ring-chart svg { transform: rotate(-90deg); display: block; }
+  .ring-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ring-num { font-size: 20px; font-weight: 700; line-height: 1; }
+  .ring-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+  .stats-right { display: flex; flex-direction: column; gap: 12px; }
+  .big-pct { font-size: 36px; font-weight: 800; line-height: 1; }
+  .countdown { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; width: fit-content; }
+  .countdown.ok { background: #f0fdf4; color: #16a34a; }
+  .countdown.warn { background: #fffbeb; color: #b45309; }
+  .countdown.late { background: #fef2f2; color: #dc2626; }
+  .countdown.done { background: #f0fdf4; color: #16a34a; }
+
+  /* HORIZONTAL TIMELINE */
+  .h-tl-wrap { background: white; border-radius: 14px; padding: 24px; margin-bottom: 16px; border: 1px solid var(--border); overflow-x: auto; }
+  .h-tl { display: flex; align-items: flex-start; min-width: max-content; padding: 12px 8px 4px; }
+  .h-tl-item { display: flex; flex-direction: column; align-items: center; position: relative; min-width: 110px; }
+  .h-tl-item:not(:last-child)::after { content: ''; position: absolute; top: 11px; left: 55%; width: 100%; height: 2px; background: #e5e7eb; z-index: 0; }
+  .h-tl-item.done:not(:last-child)::after { background: var(--success); }
+  .h-tl-dot { width: 24px; height: 24px; border-radius: 50%; border: 3px solid #d1d5db; background: white; z-index: 1; position: relative; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .h-tl-item.done .h-tl-dot { background: var(--success); border-color: var(--success); color: white; }
+  .h-tl-item.current .h-tl-dot { background: #f59e0b; border-color: #f59e0b; color: white; box-shadow: 0 0 0 4px #fde68a; }
+  .h-tl-name { font-size: 12px; font-weight: 500; text-align: center; margin-top: 10px; max-width: 95px; line-height: 1.4; color: var(--text); }
+  .h-tl-date { font-size: 11px; color: var(--text-muted); margin-top: 3px; text-align: center; }
+
+  /* DETAIL SECTION */
+  .detail-section { background: white; border-radius: 14px; padding: 22px 24px; margin-bottom: 16px; border: 1px solid var(--border); }
+  .detail-section-title { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 14px; }
+
+  /* CARD STAGE */
+  .card-stage { font-size: 11px; color: #92400e; background: #fffbeb; padding: 2px 8px; border-radius: 8px; margin-top: 4px; display: inline-block; }
 </style>
 </head>
 <body>
@@ -452,6 +500,8 @@ const DEFAULT_DATA = {
   </div>
 </div>
 
+<div id="detail-page" class="detail-page"></div>
+
 <div class="header">
   <div class="header-left">
     <div class="logo">H</div>
@@ -546,6 +596,8 @@ async function init() {
     appData = deepClone(DEFAULT_DATA);
   }
   renderPage();
+  const initHash = window.location.hash.replace('#', '');
+  if (initHash) renderDetailPage(initHash);
 
   // 2. 再同步 Supabase 数据
   try {
@@ -708,8 +760,12 @@ function cardHTML(p) {
   const done = p.milestones.filter(m=>m.status==='done').length;
   const pc = p.progress >= 100 ? '#16a34a' : p.progress >= 60 ? '#2563eb' : p.progress >= 30 ? '#d97706' : '#9ca3af';
   const docCount = (p.documents||[]).length;
+  const currentM = p.milestones.find(m => m.status === 'current');
+  const stageHTML = currentM
+    ? `<div class="card-stage">📍 ${esc(currentM.name)}</div>`
+    : '';
   return `
-  <div class="card" onclick="openDetail('${esc(p.id)}')">
+  <div class="card" onclick="openDetailPage('${esc(p.id)}')">
     <div class="card-line-bar" style="background:${esc(p.lineColor)}"></div>
     <div class="card-header">
       <span class="card-id">${esc(p.id)}</span>
@@ -721,7 +777,8 @@ function cardHTML(p) {
     <div class="card-name">${esc(p.name)}</div>
     <div class="card-line">📁 ${esc(p.line)}</div>
     <div class="card-desc">${esc(p.description)}</div>
-    <div class="progress-wrap">
+    ${stageHTML}
+    <div class="progress-wrap" style="margin-top:10px">
       <div class="progress-header">
         <span class="progress-text">里程碑 ${done}/${p.milestones.length}</span>
         <span class="progress-pct" style="color:${pc}">${p.progress}%</span>
@@ -1179,6 +1236,156 @@ function flash(msg) {
   document.body.appendChild(el);
   setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 1800);
 }
+
+// ── Detail Page ────────────────────────────────────────────────
+function openDetailPage(id) {
+  history.pushState({ id }, '', '#' + id);
+  renderDetailPage(id);
+}
+
+function closeDetailPage() {
+  document.getElementById('detail-page').classList.remove('open');
+  history.pushState({}, '', window.location.pathname);
+}
+
+function renderDetailPage(id) {
+  const p = appData.products.find(x => x.id === id);
+  if (!p) return;
+
+  const done = p.milestones.filter(m => m.status === 'done').length;
+  const total = p.milestones.length;
+  const r = 46, circ = 2 * Math.PI * r;
+  const ratio = total > 0 ? done / total : 0;
+  const offset = circ * (1 - ratio);
+  const pc = p.progress >= 100 ? '#16a34a' : p.progress >= 60 ? '#2563eb' : p.progress >= 30 ? '#d97706' : '#9ca3af';
+
+  let countdownHTML = '';
+  if (p.status === '已上线') {
+    countdownHTML = `<span class="countdown done">✅ 已上线</span>`;
+  } else if (p.targetDate) {
+    const days = Math.ceil((new Date(p.targetDate) - new Date()) / 86400000);
+    if (days < 0) countdownHTML = `<span class="countdown late">⚠️ 已超期 ${Math.abs(days)} 天</span>`;
+    else if (days <= 30) countdownHTML = `<span class="countdown warn">⏰ 还有 ${days} 天</span>`;
+    else countdownHTML = `<span class="countdown ok">📅 还有 ${days} 天</span>`;
+  }
+
+  const currentM = p.milestones.find(m => m.status === 'current');
+  const docs = p.documents || [];
+
+  const page = document.getElementById('detail-page');
+  page.innerHTML = `
+    <div class="detail-nav">
+      <button class="back-btn" onclick="closeDetailPage()">← 返回看板</button>
+      <span style="font-size:13px;color:var(--text-muted);font-weight:500">${esc(p.line)}</span>
+      ${editMode ? `<button class="hbtn" style="margin-left:auto" onclick="openEdit('${esc(id)}')">✏️ 编辑此产品</button>` : ''}
+    </div>
+    <div class="detail-content">
+
+      <div class="detail-header">
+        <div class="detail-title-row">
+          <div>
+            <div style="font-size:11px;color:var(--text-muted);font-family:monospace;margin-bottom:6px">${esc(p.id)}</div>
+            <div class="detail-title">${esc(p.name)}</div>
+          </div>
+          <span class="badge status-${esc(p.status)}" style="flex-shrink:0;padding:6px 14px;font-size:13px">
+            <span class="badge-dot status-dot-${esc(p.status)}"></span>${esc(p.status)}
+          </span>
+        </div>
+        <div class="detail-meta-row">
+          <span style="display:flex;align-items:center;gap:5px">
+            <span class="avatar" style="background:${esc(p.ownerBg)};width:22px;height:22px;font-size:11px">${esc(p.owner[0])}</span>
+            ${esc(p.owner)}
+          </span>
+          ${p.startDate ? `<span>📅 ${esc(p.startDate)} 启动</span>` : ''}
+          ${p.targetDate ? `<span>🎯 ${esc(p.targetDate)} 目标上线</span>` : ''}
+        </div>
+        <div class="detail-desc">${esc(p.description)}</div>
+        ${currentM ? `<div class="detail-stage">📍 当前阶段：${esc(currentM.name)}</div>` : ''}
+      </div>
+
+      <div class="detail-stats">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div class="ring-chart">
+            <svg width="110" height="110" viewBox="0 0 110 110">
+              <circle cx="55" cy="55" r="${r}" fill="none" stroke="#e5e7eb" stroke-width="10"/>
+              <circle cx="55" cy="55" r="${r}" fill="none" stroke="${pc}" stroke-width="10" stroke-linecap="round"
+                stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}"/>
+            </svg>
+            <div class="ring-label">
+              <div class="ring-num" style="color:${pc}">${done}/${total}</div>
+              <div class="ring-sub">里程碑</div>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted)">完成进度</div>
+        </div>
+        <div class="stats-right">
+          <div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">整体进度</div>
+            <div class="big-pct" style="color:${pc}">${p.progress}%</div>
+            <div class="big-progress-bar" style="margin-top:10px"><div class="big-progress-fill" style="width:${p.progress}%;background:${pc}"></div></div>
+          </div>
+          ${countdownHTML}
+        </div>
+      </div>
+
+      ${total > 0 ? `
+      <div class="h-tl-wrap">
+        <div class="detail-section-title">里程碑进度</div>
+        <div class="h-tl">
+          ${p.milestones.map(m => `
+          <div class="h-tl-item ${esc(m.status)}">
+            <div class="h-tl-dot">${m.status === 'done' ? '✓' : m.status === 'current' ? '▶' : ''}</div>
+            <div class="h-tl-name">${esc(m.name)}</div>
+            <div class="h-tl-date">${esc(m.date)}</div>
+          </div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      ${p.goal ? `
+      <div class="detail-section">
+        <div class="detail-section-title">产品目标</div>
+        <div class="goal-box">${esc(p.goal)}</div>
+      </div>` : ''}
+
+      ${docs.length > 0 ? `
+      <div class="detail-section">
+        <div class="detail-section-title">文档附件</div>
+        <div class="doc-list">
+          ${docs.map(d => `
+          <div class="doc-item">
+            <div class="doc-icon">${docIcon(d.type)}</div>
+            <div class="doc-info">
+              <div class="doc-name">${esc(d.name)}</div>
+              <div class="doc-meta">${esc(d.type)} · ${esc(d.addedBy)} · ${esc(d.addedDate)}</div>
+            </div>
+            <div class="doc-actions">
+              <a class="doc-open-btn" href="${esc(d.url)}" target="_blank" rel="noopener">打开</a>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      ${p.updates.length > 0 ? `
+      <div class="detail-section">
+        <div class="detail-section-title">最新进展</div>
+        ${p.updates.map(u => `
+        <div class="update-item">
+          <div class="update-meta"><span>${esc(u.author)}</span><span>${esc(u.date)}</span></div>
+          <div class="update-content">${esc(u.content)}</div>
+        </div>`).join('')}
+      </div>` : ''}
+
+    </div>
+  `;
+  page.classList.add('open');
+  page.scrollTop = 0;
+}
+
+window.addEventListener('popstate', () => {
+  const hash = window.location.hash.replace('#', '');
+  if (hash && appData) renderDetailPage(hash);
+  else document.getElementById('detail-page').classList.remove('open');
+});
 
 document.addEventListener('DOMContentLoaded', init);
 </script>
