@@ -1046,7 +1046,9 @@ function renderDigest() {
 
 function scrollToPmCard(pid) {
   const el = document.getElementById('pm-card-' + pid);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 72;
+  window.scrollTo({ top, behavior: 'smooth' });
 }
 
 function toggleDigest() {
