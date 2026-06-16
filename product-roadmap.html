@@ -264,6 +264,7 @@ const DEFAULT_DATA = {
     {
       id: "P001",
       name: "竹制桌面收纳套组",
+      group: "Yuetai Shang",
       line: "Hiplant",
       lineColor: "#16a34a",
       owner: "李明",
@@ -289,6 +290,7 @@ const DEFAULT_DATA = {
     {
       id: "P002",
       name: "实木手机壳·iPhone 系列",
+      group: "Yuetai Shang",
       line: "Sunet",
       lineColor: "#ea580c",
       owner: "张晓",
@@ -314,6 +316,7 @@ const DEFAULT_DATA = {
     {
       id: "P003",
       name: "橡木键盘腕托",
+      group: "Yuetai Shang",
       line: "Hiplant",
       lineColor: "#16a34a",
       owner: "王芳",
@@ -339,6 +342,7 @@ const DEFAULT_DATA = {
     {
       id: "P004",
       name: "实木手机壳·三星系列",
+      group: "Yuetai Shang",
       line: "Sunet",
       lineColor: "#ea580c",
       owner: "张晓",
@@ -363,6 +367,7 @@ const DEFAULT_DATA = {
     {
       id: "P005",
       name: "竹制旅行收纳包",
+      group: "Yang Li",
       line: "Ulight",
       lineColor: "#7c3aed",
       owner: "陈浩",
@@ -389,6 +394,7 @@ const DEFAULT_DATA = {
     {
       id: "P006",
       name: "磁吸竹制车载手机支架",
+      group: "Yang Li",
       line: "Ulight",
       lineColor: "#7c3aed",
       owner: "刘洋",
@@ -435,7 +441,16 @@ const DEFAULT_DATA = {
           <input type="text" id="c-name" placeholder="如：竹制桌面收纳套组">
         </div>
         <div class="form-field" style="flex:1">
-          <label>产品线 *</label>
+          <label>所属团队 *</label>
+          <select id="c-group">
+            <option value="Yuetai Shang">Yuetai Shang</option>
+            <option value="Yang Li">Yang Li</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field" style="flex:1">
+          <label>业务线</label>
           <select id="c-line">
             <option value="Hiplant">Hiplant</option>
             <option value="Sunet">Sunet</option>
@@ -718,16 +733,17 @@ function renderCards() {
 }
 
 function renderGrouped(list, grid) {
-  grid.className = ''; // remove grid class, groups handle their own layout
-  const lineOrder = ['Hiplant', 'Sunet', 'Ulight'];
-  const lines = [...new Set(appData.products.map(p => p.line))].sort((a,b) => {
-    const ai = lineOrder.indexOf(a), bi = lineOrder.indexOf(b);
+  grid.className = '';
+  const groupOrder = ['Yuetai Shang', 'Yang Li'];
+  const groupColors = { 'Yuetai Shang': '#2563eb', 'Yang Li': '#d97706' };
+  const groups = [...new Set(appData.products.map(p => p.group || 'Other'))].sort((a,b) => {
+    const ai = groupOrder.indexOf(a), bi = groupOrder.indexOf(b);
     return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
   });
-  grid.innerHTML = lines.map(line => {
-    const items = list.filter(p => p.line === line);
+  grid.innerHTML = groups.map(group => {
+    const items = list.filter(p => (p.group || 'Other') === group);
     if (!items.length) return '';
-    const color = items[0].lineColor;
+    const color = groupColors[group] || '#6b7280';
     const avg = Math.round(items.reduce((a,p) => a+p.progress, 0) / items.length);
     const statusCounts = items.reduce((m,p) => { m[p.status] = (m[p.status]||0)+1; return m; }, {});
     const statusSummary = Object.entries(statusCounts).map(([s,c]) => `${s} ${c}`).join(' · ');
@@ -736,7 +752,7 @@ function renderGrouped(list, grid) {
       <div class="group-header" style="background:${color};color:white">
         <div class="group-header-dot" style="background:rgba(255,255,255,.5)"></div>
         <div>
-          <div class="group-header-name">${esc(line)}</div>
+          <div class="group-header-name">${esc(group)}</div>
           <div class="group-header-meta">${items.length} 个产品 · ${esc(statusSummary)}</div>
         </div>
         <div class="group-header-progress">
@@ -1180,6 +1196,7 @@ function createProduct() {
   if (!name || !owner || !desc) { alert('请填写产品名称、负责人和描述'); return; }
 
   const line = document.getElementById('c-line').value;
+  const group = document.getElementById('c-group').value;
   const lineColors = { Hiplant: '#16a34a', Sunet: '#ea580c', Ulight: '#7c3aed' };
   const ownerColors = ['#2563eb','#d97706','#7c3aed','#0891b2','#be185d','#16a34a'];
   const maxNum = appData.products.reduce((max, p) => {
@@ -1191,6 +1208,7 @@ function createProduct() {
   const newProduct = {
     id: newId,
     name,
+    group,
     line,
     lineColor: lineColors[line] || '#6b7280',
     owner,
