@@ -987,7 +987,6 @@ function renderProductMilestones() {
         : `<hr class="pm-divider"><div class="pm-no-log">暂无周会记录</div>`;
 
       return `<div class="pm-card" id="pm-card-${esc(p.id)}" onclick="openDetailPage('${esc(p.id)}')">
-        ${p.coverImage ? `<img class="pm-cover" src="${p.coverImage}" alt="">` : ''}
         <div class="pm-card-body">
         <div class="pm-header">
           <div style="width:4px;height:36px;border-radius:2px;background:${accentColor};flex-shrink:0"></div>
