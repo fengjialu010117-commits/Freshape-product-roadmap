@@ -472,6 +472,8 @@ const DEFAULT_DATA = {
           <select id="c-group">
             <option value="Yuetai Shang">Yuetai Shang</option>
             <option value="Yang Li">Yang Li</option>
+            <option value="Haibo Zhang">Haibo Zhang</option>
+            <option value="Yong Liu">Yong Liu</option>
           </select>
         </div>
       </div>
@@ -690,7 +692,7 @@ async function init() {
 }
 
 function renderPage() {
-  document.getElementById('hdr-title').textContent = appData.company + ' 产品研发进度看板';
+  document.getElementById('hdr-title').textContent = 'Freshape 产品研发进度看板';
   document.getElementById('hdr-sub').textContent = '共 ' + appData.products.length + ' 个产品 · 最后更新 ' + appData.lastUpdated;
   const lines = [...new Set(appData.products.map(p => p.line))];
   const lf = document.getElementById('line-filters');
@@ -704,8 +706,8 @@ function renderPage() {
 function renderCharts() {
   const p = appData.products;
   if (!p.length) return;
-  const groupOrder = ['Yuetai Shang', 'Yang Li'];
-  const groupColors = { 'Yuetai Shang': '#2563eb', 'Yang Li': '#d97706' };
+  const groupOrder = ['Yuetai Shang', 'Yang Li', 'Haibo Zhang', 'Yong Liu'];
+  const groupColors = { 'Yuetai Shang': '#2563eb', 'Yang Li': '#d97706', 'Haibo Zhang': '#16a34a', 'Yong Liu': '#7c3aed' };
   const statusColors = { '规划中':'#0369a1','推进中':'#f59e0b','测试中':'#7c3aed','已上线':'#16a34a','暂停':'#9ca3af' };
   const groups = groupOrder.filter(g => p.some(x => (x.group||'Other') === g));
 
@@ -850,8 +852,8 @@ function renderCards() {
 
 function renderGrouped(list, grid) {
   grid.className = '';
-  const groupOrder = ['Yuetai Shang', 'Yang Li'];
-  const groupColors = { 'Yuetai Shang': '#2563eb', 'Yang Li': '#d97706' };
+  const groupOrder = ['Yuetai Shang', 'Yang Li', 'Haibo Zhang', 'Yong Liu'];
+  const groupColors = { 'Yuetai Shang': '#2563eb', 'Yang Li': '#d97706', 'Haibo Zhang': '#16a34a', 'Yong Liu': '#7c3aed' };
   const groups = [...new Set(appData.products.map(p => p.group || 'Other'))].sort((a,b) => {
     const ai = groupOrder.indexOf(a), bi = groupOrder.indexOf(b);
     return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
