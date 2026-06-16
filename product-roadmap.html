@@ -328,6 +328,23 @@
   .ms-date { font-size:11px; color:var(--text-muted); margin-top:3px; text-align:center; }
   .ms-item.current .ms-date { color:#b45309; }
 
+  /* NEXT STEPS */
+  .ns-list { display: flex; flex-direction: column; gap: 8px; }
+  .ns-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: white; transition: border-color .15s; }
+  .ns-item.done { background: var(--gray-light); opacity: .65; }
+  .ns-check { width: 20px; height: 20px; border-radius: 6px; border: 2px solid #d1d5db; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-top: 1px; background: white; transition: all .15s; font-size: 11px; font-weight: 700; color: white; }
+  .ns-item.done .ns-check { background: var(--success); border-color: var(--success); }
+  .ns-body { flex: 1; min-width: 0; }
+  .ns-text { font-size: 14px; font-weight: 500; line-height: 1.5; }
+  .ns-item.done .ns-text { text-decoration: line-through; color: var(--text-muted); }
+  .ns-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .ns-assignee { font-size: 11px; color: var(--text-muted); background: #f3f4f6; padding: 2px 8px; border-radius: 8px; }
+  .ns-due { font-size: 11px; padding: 2px 8px; border-radius: 8px; }
+  .ns-due.ok { color: var(--text-muted); background: #f3f4f6; }
+  .ns-due.soon { color: #b45309; background: #fffbeb; }
+  .ns-due.overdue { color: #dc2626; background: #fef2f2; font-weight: 600; }
+  .ns-empty { text-align: center; padding: 24px; color: var(--text-muted); font-size: 13px; border: 1px dashed var(--border); border-radius: 10px; }
+
   /* CHARTS */
   .charts-section { padding: 0 28px 40px; }
   .charts-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
@@ -391,7 +408,7 @@ const DEFAULT_DATA = {
       updates: [
         { date: "2026-06-12", author: "李明", content: "供应商完成首批试产 200 套，质检报告预计本周到达，尺寸精度符合要求，等待表面处理确认。" }
       ],
-      documents: []
+      documents: [], nextSteps: []
     },
     {
       id: "P002",
@@ -417,7 +434,7 @@ const DEFAULT_DATA = {
       updates: [
         { date: "2026-04-02", author: "张晓", content: "Q1 收官：GMV 32 万欧元，Reviews 623 条，评分 4.6 ★，全部目标达成。iPhone 17 系列模具立项已启动。" }
       ],
-      documents: []
+      documents: [], nextSteps: []
     },
     {
       id: "P003",
@@ -443,7 +460,7 @@ const DEFAULT_DATA = {
       updates: [
         { date: "2026-06-10", author: "王芳", content: "完成初步竞品扫描，已整理 12 款主要竞品数据。本周开始用户访谈，下周出调研报告。" }
       ],
-      documents: []
+      documents: [], nextSteps: []
     },
     {
       id: "P004",
@@ -468,7 +485,7 @@ const DEFAULT_DATA = {
       updates: [
         { date: "2026-06-15", author: "张晓", content: "项目正式立项，S25 Ultra 尺寸资料已收集，模具供应商报价沟通中。" }
       ],
-      documents: []
+      documents: [], nextSteps: []
     },
     {
       id: "P005",
@@ -495,7 +512,7 @@ const DEFAULT_DATA = {
       updates: [
         { date: "2026-06-14", author: "陈浩", content: "首批 2000 套已出仓，头程物流单号已录入，预计 6/28 到达 ONT8 仓库。Listing 主图已完成，A+ 内容设计稿审核中。" }
       ],
-      documents: []
+      documents: [], nextSteps: []
     },
     {
       id: "P006",
@@ -521,7 +538,7 @@ const DEFAULT_DATA = {
       updates: [
         { date: "2026-05-02", author: "刘洋", content: "暂停：Apple MagSafe 认证报价 12 万元，超出 Q2 预算。已提交 Q3 追加预算申请，等待 6 月底管理层审批。" }
       ],
-      documents: []
+      documents: [], nextSteps: []
     }
   ]
 };
@@ -1362,6 +1379,42 @@ function openEdit(id) {
       </div>
     </div>
 
+    <!-- 下一步行动 -->
+    <div class="edit-section">
+      <div class="edit-section-title">✅ 下一步行动</div>
+      <div id="e-ns-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">
+        ${(p.nextSteps||[]).length === 0
+          ? '<div style="font-size:13px;color:var(--text-muted)">暂无行动项</div>'
+          : (p.nextSteps||[]).map((s,i) => `
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:white;border-radius:8px;border:1px solid var(--border)">
+            <span style="font-size:12px;font-weight:600;color:${s.done?'var(--success)':'var(--text-muted)'}">${s.done?'✓':'○'}</span>
+            <span style="flex:1;font-size:13px;${s.done?'text-decoration:line-through;color:var(--text-muted)':''}">${esc(s.text)}</span>
+            ${s.assignee?`<span style="font-size:11px;color:var(--text-muted)">@${esc(s.assignee)}</span>`:''}
+            ${s.dueDate?`<span style="font-size:11px;color:var(--text-muted)">${esc(s.dueDate)}</span>`:''}
+            <button class="btn btn-sm" style="padding:2px 8px;font-size:11px;color:${s.done?'var(--text-muted)':'var(--success)'};border-color:${s.done?'var(--border)':'#bbf7d0'};background:${s.done?'white':'#f0fdf4'}" onclick="toggleNextStep('${esc(id)}','${esc(s.id)}');openEdit('${esc(id)}')">${s.done?'撤销':'完成'}</button>
+            <button class="btn btn-danger btn-sm" style="padding:2px 8px;font-size:11px" onclick="deleteNextStep('${esc(id)}','${esc(s.id)}');openEdit('${esc(id)}')">删除</button>
+          </div>`).join('')}
+      </div>
+      <div style="border-top:1px dashed var(--border);padding-top:12px">
+        <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px">添加行动项</div>
+        <div class="form-field" style="margin-bottom:8px">
+          <label>行动内容</label>
+          <input type="text" id="ns-text" placeholder="如：完成打样确认">
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>负责人</label>
+            <input type="text" id="ns-assignee" placeholder="姓名（可选）">
+          </div>
+          <div class="form-field">
+            <label>截止日期</label>
+            <input type="date" id="ns-due">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="addNextStep('${esc(id)}')">添加</button>
+      </div>
+    </div>
+
     <!-- 文档附件 -->
     <div class="edit-section edit-mode-modal">
       <div class="edit-section-title">📎 飞书文档 / 云盘链接</div>
@@ -1569,6 +1622,33 @@ function deleteDoc(id, idx) {
   saveData(); renderCards();
   const item = document.getElementById('doc-item-' + idx);
   if (item) item.remove();
+  flash('已删除');
+}
+
+// ── Next Steps ──────────────────────────────────────────────────
+function addNextStep(id) {
+  const text = document.getElementById('ns-text').value.trim();
+  if (!text) { alert('请填写行动内容'); return; }
+  const assignee = document.getElementById('ns-assignee').value.trim();
+  const dueDate = document.getElementById('ns-due').value;
+  const p = appData.products.find(x => x.id === id);
+  if (!p.nextSteps) p.nextSteps = [];
+  p.nextSteps.push({ id: 'ns' + Date.now(), text, assignee, dueDate, done: false });
+  saveData();
+  openEdit(id);
+  flash('行动项已添加');
+}
+
+function toggleNextStep(id, nsId) {
+  const p = appData.products.find(x => x.id === id);
+  const s = (p.nextSteps||[]).find(x => x.id === nsId);
+  if (s) { s.done = !s.done; saveData(); renderCards(); renderDetailPage(id); }
+}
+
+function deleteNextStep(id, nsId) {
+  const p = appData.products.find(x => x.id === id);
+  p.nextSteps = (p.nextSteps||[]).filter(x => x.id !== nsId);
+  saveData();
   flash('已删除');
 }
 
@@ -1813,6 +1893,35 @@ function renderDetailPage(id) {
           </div>`).join('')}
         </div>
       </div>` : ''}
+
+      ${(() => {
+        const ns = p.nextSteps || [];
+        const today = new Date();
+        const items = ns.map(s => {
+          let dueHTML = '';
+          if (s.dueDate) {
+            const d = new Date(s.dueDate);
+            const diff = Math.ceil((d - today) / 86400000);
+            const cls = diff < 0 ? 'overdue' : diff <= 7 ? 'soon' : 'ok';
+            const label = diff < 0 ? `超期 ${Math.abs(diff)} 天` : diff === 0 ? '今天' : `${diff} 天后`;
+            dueHTML = `<span class="ns-due ${cls}">${esc(label)}</span>`;
+          }
+          return `<div class="ns-item ${s.done?'done':''}">
+            <div class="ns-check" onclick="toggleNextStep('${esc(p.id)}','${esc(s.id)}')">${s.done?'✓':''}</div>
+            <div class="ns-body">
+              <div class="ns-text">${esc(s.text)}</div>
+              <div class="ns-meta">
+                ${s.assignee?`<span class="ns-assignee">@ ${esc(s.assignee)}</span>`:''}
+                ${dueHTML}
+              </div>
+            </div>
+          </div>`;
+        }).join('');
+        return `<div class="detail-section">
+          <div class="detail-section-title">下一步行动</div>
+          ${ns.length ? `<div class="ns-list">${items}</div>` : `<div class="ns-empty">暂无行动项 · 在编辑模式下添加</div>`}
+        </div>`;
+      })()}
 
       ${p.updates && p.updates.length > 0 ? `
       <div class="detail-section">
