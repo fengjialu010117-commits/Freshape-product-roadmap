@@ -2508,6 +2508,7 @@ window.addEventListener('popstate', (e) => {
   if (!hash) {
     document.getElementById('detail-page').classList.remove('open');
     document.getElementById('team-page').classList.remove('open');
+    if (appData) { renderCards(); renderStats(); renderDigest(); renderProductMilestones(); }
   } else if (hash.startsWith('team-')) {
     document.getElementById('detail-page').classList.remove('open');
     const group = hash.replace('team-', '').replace(/-/g, ' ');
