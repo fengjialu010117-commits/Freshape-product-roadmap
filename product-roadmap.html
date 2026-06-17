@@ -92,7 +92,7 @@
   .show-more-btn:hover { background: #e5e7eb; }
 
   /* MAIN */
-  .main { padding: 20px 28px; }
+  .main { padding: 20px 28px; background: white; }
   .section-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
   .section-title span { font-size: 12px; color: var(--text-muted); font-weight: 400; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
@@ -850,6 +850,7 @@ const DEFAULT_DATA = {
 </div>
 
 <div class="stats" id="stats-area"></div>
+<div class="digest-wrap" id="digest-area"></div>
 
 <div class="main" style="padding-top:8px">
   <div class="section-title">团队概览</div>
@@ -859,7 +860,6 @@ const DEFAULT_DATA = {
   </div>
 </div>
 
-<div class="digest-wrap" id="digest-area"></div>
 <div id="pm-area"></div>
 <div class="charts-section" id="charts-area"></div>
 
