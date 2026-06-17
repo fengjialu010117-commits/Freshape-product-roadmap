@@ -966,6 +966,7 @@ function renderProductMilestones() {
           <div class="pm-ms-dot">${m.status==='done'?'✓':overdue?'!':''}</div>
           <div class="pm-ms-name">${esc(m.name)}</div>
           <div class="pm-ms-date">${esc(m.date||'')}</div>
+          ${m.status==='current'&&m.note ? `<div style="font-size:10px;color:#92400e;text-align:center;margin-top:2px;max-width:72px;line-height:1.3">${esc(m.note)}</div>` : ''}
         </div>`;
       }).join('');
 
@@ -1880,29 +1881,43 @@ function addWeeklyLog(id) {
 }
 
 function milestoneRowHTML(id, m, i) {
-  return `<div class="milestone-edit-item" id="m-row-${i}" draggable="true"
-    ondragstart="msDragStart(event,'${esc(id)}',${i})"
-    ondragover="msDragOver(event)"
-    ondragleave="msDragLeave(event)"
-    ondrop="msDrop(event,'${esc(id)}',${i})">
-    <span class="ms-drag-handle">⠿</span>
-    <input class="ms-name-input" value="${esc(m.name)}" placeholder="里程碑名称"
-      onblur="saveMsField('${esc(id)}',${i},'name',this.value)">
-    <input type="date" class="ms-date-input" value="${esc(m.date)}"
-      onchange="saveMsField('${esc(id)}',${i},'date',this.value)">
-    <select onchange="saveMilestone('${esc(id)}',${i},this.value)">
-      <option value="upcoming" ${m.status==='upcoming'?'selected':''}>待开始</option>
-      <option value="current" ${m.status==='current'?'selected':''}>进行中</option>
-      <option value="done" ${m.status==='done'?'selected':''}>已完成</option>
-    </select>
-    <button class="btn btn-danger btn-sm" style="padding:3px 8px;font-size:11px" onclick="deleteMilestone('${esc(id)}',${i})">删</button>
+  return `<div style="display:flex;flex-direction:column;gap:4px">
+    <div class="milestone-edit-item" id="m-row-${i}" draggable="true"
+      ondragstart="msDragStart(event,'${esc(id)}',${i})"
+      ondragover="msDragOver(event)"
+      ondragleave="msDragLeave(event)"
+      ondrop="msDrop(event,'${esc(id)}',${i})">
+      <span class="ms-drag-handle">⠿</span>
+      <input class="ms-name-input" value="${esc(m.name)}" placeholder="里程碑名称"
+        onblur="saveMsField('${esc(id)}',${i},'name',this.value)">
+      <input type="date" class="ms-date-input" value="${esc(m.date)}"
+        onchange="saveMsField('${esc(id)}',${i},'date',this.value)">
+      <select onchange="saveMilestone('${esc(id)}',${i},this.value)">
+        <option value="upcoming" ${m.status==='upcoming'?'selected':''}>待开始</option>
+        <option value="current" ${m.status==='current'?'selected':''}>进行中</option>
+        <option value="done" ${m.status==='done'?'selected':''}>已完成</option>
+      </select>
+      <button class="btn btn-danger btn-sm" style="padding:3px 8px;font-size:11px" onclick="deleteMilestone('${esc(id)}',${i})">删</button>
+    </div>
+    ${m.status==='current' ? `<div style="display:flex;align-items:center;gap:6px;padding:0 4px 4px 28px">
+      <input class="ms-name-input" value="${esc(m.note||'')}" placeholder="当前进展（如：跌落测试中）"
+        style="font-size:12px;color:#92400e"
+        onblur="saveMsField('${esc(id)}',${i},'note',this.value)">
+      ${m.note ? `<button onclick="saveMsField('${esc(id)}',${i},'note','');document.getElementById('e-milestones').innerHTML=appData.products.find(x=>x.id==='${esc(id)}').milestones.map((m,idx)=>milestoneRowHTML('${esc(id)}',m,idx)).join('')" style="font-size:11px;color:#94a3b8;background:none;border:none;cursor:pointer;padding:2px 4px">✕</button>` : ''}
+    </div>` : ''}
   </div>`;
 }
 
 function saveMilestone(id, idx, val) {
   const p = appData.products.find(x=>x.id===id);
   p.milestones[idx].status = val;
-  saveData(); renderCards();
+  if (val === 'current') {
+    const note = prompt('当前阶段进展（可留空）：', p.milestones[idx].note || '');
+    if (note !== null) p.milestones[idx].note = note.trim();
+  }
+  saveData(); renderCards(); renderProductMilestones();
+  const list = document.getElementById('e-milestones');
+  if (list) list.innerHTML = p.milestones.map((m, i) => milestoneRowHTML(id, m, i)).join('');
 }
 
 function saveMsField(id, idx, field, val) {
@@ -2259,6 +2274,7 @@ function renderDetailPage(id) {
                 <div class="ms-dot">${m.status==='done'?'✓':overdue?'!':m.status==='current'?'●':''}</div>
                 <div class="ms-name">${esc(m.name)}</div>
                 <div class="ms-date">${esc(m.date)}</div>
+                ${m.status==='current'&&m.note ? `<div style="font-size:10px;color:#92400e;text-align:center;margin-top:3px;line-height:1.3;font-weight:600">${esc(m.note)}</div>` : ''}
                 ${overdue ? `<div class="overdue-tag">超期 ${overdueDays} 天</div>` : ''}
               </div>`;
             }).join('')}
