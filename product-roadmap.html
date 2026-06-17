@@ -854,7 +854,7 @@ const DEFAULT_DATA = {
 <div id="pm-area"></div>
 
 <div class="main" style="padding-top:8px">
-  <div class="section-title" style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;font-weight:700">团队概览 <span id="count-label"></span></div>
+  <div class="section-title">团队概览</div>
   <div class="grid" id="card-grid"></div>
   <div class="no-results" id="no-results" style="display:none">
     <div class="icon">🔍</div><div>没有找到匹配的产品</div>
@@ -1235,7 +1235,6 @@ function getFiltered() {
 
 function renderCards() {
   const list = getFiltered();
-  document.getElementById('count-label').textContent = '（' + list.length + ' 个）';
   const grid = document.getElementById('card-grid');
   const noRes = document.getElementById('no-results');
   if (!list.length) { grid.innerHTML = ''; noRes.style.display = 'block'; return; }
