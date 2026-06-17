@@ -1897,7 +1897,7 @@ function milestoneRowHTML(id, m, i) {
   const taskListHTML = tasks.map((t, ti) => `
     <div style="display:flex;align-items:center;gap:6px;padding:2px 0">
       <span style="font-size:11px;color:#94a3b8;cursor:pointer;flex-shrink:0" onclick="deleteMsTask('${esc(id)}',${i},'${esc(t.id)}')">✕</span>
-      <span style="font-size:12px;color:#374151">${esc(t.text)}</span>
+      <span id="mt-text-${i}-${ti}" style="font-size:12px;color:#374151;cursor:text;flex:1" ondblclick="startEditMsTask('${esc(id)}',${i},'${esc(t.id)}',this)" title="双击编辑">${esc(t.text)}</span>
     </div>`).join('');
   return `<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px">
     <div class="milestone-edit-item" id="m-row-${i}" draggable="true"
@@ -1955,6 +1955,44 @@ function deleteMsTask(id, idx, taskId) {
   saveData(); renderProductMilestones();
   const list = document.getElementById('e-milestones');
   if (list) list.innerHTML = p.milestones.map((m, i) => milestoneRowHTML(id, m, i)).join('');
+}
+
+function startEditMsTask(id, idx, taskId, el) {
+  const cur = el.textContent;
+  const input = document.createElement('input');
+  input.value = cur;
+  input.style.cssText = 'flex:1;font-size:12px;padding:1px 5px;border:1px solid #93c5fd;border-radius:4px;outline:none;font-family:inherit;width:100%';
+  el.replaceWith(input);
+  input.focus();
+  input.select();
+  const save = () => {
+    const val = input.value.trim();
+    if (val && val !== cur) saveMsTaskText(id, idx, taskId, val);
+    else {
+      const span = document.createElement('span');
+      span.id = el.id; span.style.cssText = el.style.cssText;
+      span.setAttribute('ondblclick', el.getAttribute('ondblclick'));
+      span.setAttribute('title', '双击编辑');
+      span.textContent = cur;
+      input.replaceWith(span);
+    }
+  };
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { input.value = cur; input.blur(); }
+  });
+}
+
+function saveMsTaskText(id, idx, taskId, text) {
+  const p = appData.products.find(x=>x.id===id);
+  const task = (p.milestones[idx].tasks||[]).find(t=>t.id===taskId);
+  if (!task) return;
+  task.text = text;
+  saveData(); renderProductMilestones();
+  const list = document.getElementById('e-milestones');
+  if (list) list.innerHTML = p.milestones.map((m, i) => milestoneRowHTML(id, m, i)).join('');
+  if (document.getElementById('detail-page').classList.contains('open')) renderDetailPage(id);
 }
 
 function toggleMsTask(pid, mIdx, taskId) {
@@ -2352,11 +2390,6 @@ function renderDetailPage(id) {
         </div>`;
         })() : ''}
 
-        ${p.goal ? `
-        <div class="detail-section">
-          <div class="detail-section-title">产品目标</div>
-          <div class="goal-box">${esc(p.goal)}</div>
-        </div>` : ''}
 
         ${nsAll.length || editMode ? `
         <div class="detail-section">
@@ -2441,6 +2474,7 @@ function renderDetailPage(id) {
           ${p.line?`<div class="sb-meta-row"><span class="sb-meta-label">业务线</span><span class="sb-meta-val">${esc(p.line)}</span></div>`:''}
           ${p.startDate?`<div class="sb-meta-row"><span class="sb-meta-label">启动</span><span class="sb-meta-val">${esc(p.startDate)}</span></div>`:''}
           ${p.targetDate?`<div class="sb-meta-row"><span class="sb-meta-label">目标</span><span class="sb-meta-val">${esc(p.targetDate)}</span></div>`:''}
+          ${p.goal?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><div style="font-size:11px;color:#94a3b8;margin-bottom:5px">产品目标</div><div style="font-size:12px;color:#374151;line-height:1.6;white-space:pre-wrap">${esc(p.goal)}</div></div>`:''}
         </div>
 
         <div class="sb-block">
