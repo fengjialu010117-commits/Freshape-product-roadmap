@@ -443,6 +443,17 @@
   .ms-item.overdue .ms-dot { background: #fef2f2; border-color: #ef4444; color: #dc2626; font-size: 9px; }
   .ms-item.overdue .ms-name { color: #dc2626; font-weight: 600; }
   .ms-item.overdue .ms-date { color: #ef4444; font-weight: 600; }
+  .ms-item { cursor: pointer; }
+  .ms-item.selected .ms-dot { box-shadow: 0 0 0 4px #bfdbfe; }
+  .ms-item.selected .ms-name { color: #2563eb; }
+  .ms-task-panel { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-top: 12px; }
+  .ms-task-panel-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .ms-task-item { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid #f1f5f9; cursor: pointer; }
+  .ms-task-item:last-child { border-bottom: none; }
+  .ms-task-check { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid #d1d5db; background: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .15s; }
+  .ms-task-check.done { background: #16a34a; border-color: #16a34a; }
+  .ms-task-text { font-size: 13px; color: #374151; flex: 1; }
+  .ms-task-item.done .ms-task-text { text-decoration: line-through; color: #9ca3af; }
   .overdue-tag { font-size: 10px; background: #fef2f2; color: #dc2626; border-radius: 6px; padding: 1px 6px; margin-top: 3px; font-weight: 600; }
 
   /* 本周快报 */
@@ -886,6 +897,7 @@ const DEFAULT_DATA = {
 // ── State ──────────────────────────────────────────────────────
 let appData = null;
 let editMode = false;
+const selectedMsMap = {};
 let viewMode = 'group';
 let filters = { status: 'all', line: 'all' };
 const STORAGE_KEY = 'hiwood-roadmap-v2';
@@ -1954,6 +1966,11 @@ function toggleMsTask(pid, mIdx, taskId) {
   if (document.getElementById('detail-page').classList.contains('open')) renderDetailPage(pid);
 }
 
+function selectMs(pid, idx) {
+  selectedMsMap[pid] = idx;
+  renderDetailPage(pid);
+}
+
 function saveMsField(id, idx, field, val) {
   const p = appData.products.find(x=>x.id===id);
   if (!p || !p.milestones[idx]) return;
@@ -2294,17 +2311,23 @@ function renderDetailPage(id) {
           <div class="dp-hero-progress"><div style="height:100%;width:${p.progress}%;background:${pc}"></div></div>
         </div>
 
-        ${total > 0 ? `
+        ${total > 0 ? (() => {
+          const selIdx = selectedMsMap[p.id] !== undefined ? selectedMsMap[p.id]
+            : (p.milestones.findIndex(m=>m.status==='current') >= 0 ? p.milestones.findIndex(m=>m.status==='current') : 0);
+          const selM = p.milestones[selIdx];
+          const tasks = selM ? (selM.tasks||[]) : [];
+          const doneCnt = tasks.filter(t=>t.done).length;
+          return `
         <div class="detail-section" style="margin-top:20px">
           <div class="detail-section-title">里程碑进度</div>
           <div class="ms-tl">
-            ${p.milestones.map(m => {
+            ${p.milestones.map((m,mi) => {
               const todayMs = new Date(); todayMs.setHours(0,0,0,0);
               const mDate = m.date ? new Date(m.date) : null;
               const overdue = m.status !== 'done' && mDate && mDate < todayMs;
               const overdueDays = overdue ? Math.ceil((todayMs - mDate) / 86400000) : 0;
-              const cls = overdue ? 'overdue' : m.status;
-              return `<div class="ms-item ${esc(cls)}">
+              const cls = (overdue ? 'overdue' : m.status) + (mi===selIdx ? ' selected' : '');
+              return `<div class="ms-item ${esc(cls)}" onclick="selectMs('${esc(p.id)}',${mi})">
                 <div class="ms-dot">${m.status==='done'?'✓':overdue?'!':m.status==='current'?'●':''}</div>
                 <div class="ms-name">${esc(m.name)}</div>
                 <div class="ms-date">${esc(m.date)}</div>
@@ -2313,31 +2336,21 @@ function renderDetailPage(id) {
               </div>`;
             }).join('')}
           </div>
-        </div>` : ''}
-
-        ${p.milestones.some(m=>(m.tasks||[]).length>0) ? `
-        <div class="detail-section">
-          <div class="detail-section-title">里程碑子任务</div>
-          ${p.milestones.filter(m=>(m.tasks||[]).length>0).map((m,mi) => {
-            const realIdx = p.milestones.indexOf(m);
-            const done = (m.tasks||[]).filter(t=>t.done).length;
-            const total2 = (m.tasks||[]).length;
-            return `<div style="margin-bottom:14px">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-                <span style="font-size:13px;font-weight:700;color:${m.status==='done'?'#16a34a':m.status==='current'?'#92400e':'#6b7280'}">${esc(m.name)}</span>
-                <span style="font-size:11px;color:#94a3b8">${done}/${total2}</span>
-              </div>
-              ${(m.tasks||[]).map(t=>`
-              <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f8fafc;cursor:pointer"
-                onclick="toggleMsTask('${esc(p.id)}',${realIdx},'${esc(t.id)}')">
-                <div style="width:16px;height:16px;border-radius:4px;border:1.5px solid ${t.done?'#16a34a':'#d1d5db'};background:${t.done?'#16a34a':'white'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                  ${t.done?'<span style="font-size:9px;font-weight:700;color:white">✓</span>':''}
-                </div>
-                <span style="font-size:13px;${t.done?'text-decoration:line-through;color:#9ca3af':'color:#374151'}">${esc(t.text)}</span>
+          ${selM ? `<div class="ms-task-panel">
+            <div class="ms-task-panel-title">
+              <span>${esc(selM.name)}</span>
+              ${tasks.length ? `<span style="font-size:12px;font-weight:400;color:#94a3b8">${doneCnt}/${tasks.length} 完成</span>` : ''}
+            </div>
+            ${tasks.length === 0
+              ? `<div style="font-size:13px;color:#94a3b8">暂无子任务 · 在编辑中添加</div>`
+              : tasks.map(t=>`
+              <div class="ms-task-item ${t.done?'done':''}" onclick="toggleMsTask('${esc(p.id)}',${selIdx},'${esc(t.id)}')">
+                <div class="ms-task-check ${t.done?'done':''}">${t.done?'<span style="font-size:9px;font-weight:700;color:white">✓</span>':''}</div>
+                <span class="ms-task-text">${esc(t.text)}</span>
               </div>`).join('')}
-            </div>`;
-          }).join('')}
-        </div>` : ''}
+          </div>` : ''}
+        </div>`;
+        })() : ''}
 
         ${p.goal ? `
         <div class="detail-section">
