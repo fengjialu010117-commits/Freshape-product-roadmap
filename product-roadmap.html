@@ -966,7 +966,7 @@ function renderProductMilestones() {
           <div class="pm-ms-dot">${m.status==='done'?'✓':overdue?'!':''}</div>
           <div class="pm-ms-name">${esc(m.name)}</div>
           <div class="pm-ms-date">${esc(m.date||'')}</div>
-          ${m.status==='current'&&m.note ? `<div style="font-size:10px;color:#92400e;text-align:center;margin-top:2px;max-width:72px;line-height:1.3">${esc(m.note)}</div>` : ''}
+          ${m.status==='current' ? (()=>{ const t=(m.tasks||[]).find(x=>!x.done); return t?`<div style="font-size:10px;color:#92400e;text-align:center;margin-top:2px;max-width:72px;line-height:1.3">▸ ${esc(t.text)}</div>`:''; })() : ''}
         </div>`;
       }).join('');
 
@@ -1881,7 +1881,13 @@ function addWeeklyLog(id) {
 }
 
 function milestoneRowHTML(id, m, i) {
-  return `<div style="display:flex;flex-direction:column;gap:4px">
+  const tasks = m.tasks || [];
+  const taskListHTML = tasks.map((t, ti) => `
+    <div style="display:flex;align-items:center;gap:6px;padding:2px 0">
+      <span style="font-size:11px;color:#94a3b8;cursor:pointer;flex-shrink:0" onclick="deleteMsTask('${esc(id)}',${i},'${esc(t.id)}')">✕</span>
+      <span style="font-size:12px;color:#374151">${esc(t.text)}</span>
+    </div>`).join('');
+  return `<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px">
     <div class="milestone-edit-item" id="m-row-${i}" draggable="true"
       ondragstart="msDragStart(event,'${esc(id)}',${i})"
       ondragover="msDragOver(event)"
@@ -1899,25 +1905,53 @@ function milestoneRowHTML(id, m, i) {
       </select>
       <button class="btn btn-danger btn-sm" style="padding:3px 8px;font-size:11px" onclick="deleteMilestone('${esc(id)}',${i})">删</button>
     </div>
-    ${m.status==='current' ? `<div style="display:flex;align-items:center;gap:6px;padding:0 4px 4px 28px">
-      <input class="ms-name-input" value="${esc(m.note||'')}" placeholder="当前进展（如：跌落测试中）"
-        style="font-size:12px;color:#92400e"
-        onblur="saveMsField('${esc(id)}',${i},'note',this.value)">
-      ${m.note ? `<button onclick="saveMsField('${esc(id)}',${i},'note','');document.getElementById('e-milestones').innerHTML=appData.products.find(x=>x.id==='${esc(id)}').milestones.map((m,idx)=>milestoneRowHTML('${esc(id)}',m,idx)).join('')" style="font-size:11px;color:#94a3b8;background:none;border:none;cursor:pointer;padding:2px 4px">✕</button>` : ''}
-    </div>` : ''}
+    <div style="padding:4px 4px 4px 28px;background:#fafafa;border-radius:0 0 6px 6px;border:1px solid #f1f5f9;border-top:none">
+      ${taskListHTML}
+      <div style="display:flex;gap:6px;margin-top:4px">
+        <input id="mt-input-${i}" type="text" placeholder="添加子任务，回车确认"
+          style="flex:1;padding:4px 8px;border:1px solid var(--border);border-radius:5px;font-size:12px;outline:none;font-family:inherit"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();addMsTask('${esc(id)}',${i})}">
+        <button class="btn btn-secondary btn-sm" style="font-size:11px;padding:2px 8px" onclick="addMsTask('${esc(id)}',${i})">添加</button>
+      </div>
+    </div>
   </div>`;
 }
 
 function saveMilestone(id, idx, val) {
   const p = appData.products.find(x=>x.id===id);
   p.milestones[idx].status = val;
-  if (val === 'current') {
-    const note = prompt('当前阶段进展（可留空）：', p.milestones[idx].note || '');
-    if (note !== null) p.milestones[idx].note = note.trim();
-  }
   saveData(); renderCards(); renderProductMilestones();
   const list = document.getElementById('e-milestones');
   if (list) list.innerHTML = p.milestones.map((m, i) => milestoneRowHTML(id, m, i)).join('');
+}
+
+function addMsTask(id, idx) {
+  const input = document.getElementById('mt-input-' + idx);
+  const text = input.value.trim();
+  if (!text) return;
+  const p = appData.products.find(x=>x.id===id);
+  if (!p.milestones[idx].tasks) p.milestones[idx].tasks = [];
+  p.milestones[idx].tasks.push({ id: 'mt' + Date.now(), text, done: false });
+  saveData(); renderProductMilestones();
+  const list = document.getElementById('e-milestones');
+  if (list) list.innerHTML = p.milestones.map((m, i) => milestoneRowHTML(id, m, i)).join('');
+}
+
+function deleteMsTask(id, idx, taskId) {
+  const p = appData.products.find(x=>x.id===id);
+  p.milestones[idx].tasks = (p.milestones[idx].tasks||[]).filter(t=>t.id!==taskId);
+  saveData(); renderProductMilestones();
+  const list = document.getElementById('e-milestones');
+  if (list) list.innerHTML = p.milestones.map((m, i) => milestoneRowHTML(id, m, i)).join('');
+}
+
+function toggleMsTask(pid, mIdx, taskId) {
+  const p = appData.products.find(x=>x.id===pid);
+  const task = (p.milestones[mIdx].tasks||[]).find(t=>t.id===taskId);
+  if (!task) return;
+  task.done = !task.done;
+  saveData(); renderProductMilestones();
+  if (document.getElementById('detail-page').classList.contains('open')) renderDetailPage(pid);
 }
 
 function saveMsField(id, idx, field, val) {
@@ -2274,11 +2308,35 @@ function renderDetailPage(id) {
                 <div class="ms-dot">${m.status==='done'?'✓':overdue?'!':m.status==='current'?'●':''}</div>
                 <div class="ms-name">${esc(m.name)}</div>
                 <div class="ms-date">${esc(m.date)}</div>
-                ${m.status==='current'&&m.note ? `<div style="font-size:10px;color:#92400e;text-align:center;margin-top:3px;line-height:1.3;font-weight:600">${esc(m.note)}</div>` : ''}
+                ${m.status==='current' ? (()=>{ const t=(m.tasks||[]).find(x=>!x.done); return t?`<div style="font-size:10px;color:#92400e;text-align:center;margin-top:3px;line-height:1.3;font-weight:600">▸ ${esc(t.text)}</div>`:''; })() : ''}
                 ${overdue ? `<div class="overdue-tag">超期 ${overdueDays} 天</div>` : ''}
               </div>`;
             }).join('')}
           </div>
+        </div>` : ''}
+
+        ${p.milestones.some(m=>(m.tasks||[]).length>0) ? `
+        <div class="detail-section">
+          <div class="detail-section-title">里程碑子任务</div>
+          ${p.milestones.filter(m=>(m.tasks||[]).length>0).map((m,mi) => {
+            const realIdx = p.milestones.indexOf(m);
+            const done = (m.tasks||[]).filter(t=>t.done).length;
+            const total2 = (m.tasks||[]).length;
+            return `<div style="margin-bottom:14px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                <span style="font-size:13px;font-weight:700;color:${m.status==='done'?'#16a34a':m.status==='current'?'#92400e':'#6b7280'}">${esc(m.name)}</span>
+                <span style="font-size:11px;color:#94a3b8">${done}/${total2}</span>
+              </div>
+              ${(m.tasks||[]).map(t=>`
+              <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f8fafc;cursor:pointer"
+                onclick="toggleMsTask('${esc(p.id)}',${realIdx},'${esc(t.id)}')">
+                <div style="width:16px;height:16px;border-radius:4px;border:1.5px solid ${t.done?'#16a34a':'#d1d5db'};background:${t.done?'#16a34a':'white'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                  ${t.done?'<span style="font-size:9px;font-weight:700;color:white">✓</span>':''}
+                </div>
+                <span style="font-size:13px;${t.done?'text-decoration:line-through;color:#9ca3af':'color:#374151'}">${esc(t.text)}</span>
+              </div>`).join('')}
+            </div>`;
+          }).join('')}
         </div>` : ''}
 
         ${p.goal ? `
